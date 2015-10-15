@@ -29,11 +29,21 @@ module.exports = function(app) {
     });
     
     app.put('/api/updateStudent/:uni', function(req, res) {
+        //Data to be updated
+        var newData = req.body.updatedData;
+        newData['lastUpdated'] = new Date();
         
+        Student.update({uni:req.params.uni},{$set: newData }, function(err,data) {
+            if (err) res.send(err);
+            res.json(data);
+        });
     });
     
     app.delete('/api/deleteStudent/:uni', function(req, res) {
-        
+        Student.remove({uni:req.params.uni}, function(err,data) {
+            if(err) res.send(err);
+            res.json(data);
+        });
     });
     
     //ADMIN APIs
