@@ -22,7 +22,7 @@ module.exports = function(app) {
     app.post('/api/createCourse', function(req, res) {
         console.log(req.body);
 
-        Course.create({name:req.body.name, section:req.body.section, callNo:req.body.callNo,instructor:req.body.instructor,year : req.body.year, semester:req.body.semester, max:req.body.max, currentEnroll : req.body.currentEnroll, enrolled : req.body.enrolled, waitlisted : req.body.waitlisted,  lastUpdated : new Date(req.body.lastUpdated)} ,function(err, data) {
+        Course.create({name:req.body.name, section:req.body.section, callNo:req.body.callNo,instructor:req.body.instructor,year : req.body.year, semester:req.body.semester, max:req.body.max, currentEnroll : req.body.currentEnroll, enrolled : req.body.enrolled, waitlisted : req.body.waitlisted,  lastUpdated : new Date()} ,function(err, data) {
             if (err) res.send(err);
             res.json(data);
         });
@@ -30,9 +30,12 @@ module.exports = function(app) {
 
     app.put('/api/updateCourse/:callNo', function(req, res) {
       console.log(req.body);
-        
-      Course.update({callNo: req.params.callNo}, {'$set': req.body.updatedData} ,function(err, data2) {
-          if(err) ers.send(err);
+      var updated=req.body.updatedData;
+      var newdate=new Date();
+      updated['lastUpdated']=newdate;
+      Course.update({callNo: req.params.callNo}, {'$set': updated} ,function(err, data2) {
+          if(err) res.send(err);
+
 
           res.json(data2);
         });
@@ -41,6 +44,16 @@ module.exports = function(app) {
     });
 
     app.delete('/api/deleteCourse/:callNo', function(req, res) {
+
+      console.log(req.body);
+
+      Course.remove({callNo:req.params.callNo},function(err,removed){
+          if(err) res.send(err);
+
+          res.json(removed);
+
+      })
+
 
     });
 
