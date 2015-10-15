@@ -4,7 +4,7 @@ var Course = require('./../models/course');
 
 module.exports = function(app) {
 
-    //CRUD for Course
+    //CRUD for Courses
     app.get('/api/getCourses', function(req, res) {
         Course.find({}, function(err, data) {
             if (err) res.send(err);
