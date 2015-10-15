@@ -33,7 +33,7 @@ module.exports = function(app) {
       var updated=req.body.updatedData;
       var newdate=new Date();
       updated['lastUpdated']=newdate;
-      Course.update({callNo: req.params.callNo}, {'$set': updated} ,function(err, data2) {
+      Course.update({callNo: req.params.callNo}, {$set: updated} ,function(err, data2) {
           if(err) res.send(err);
 
 
@@ -52,11 +52,30 @@ module.exports = function(app) {
 
           res.json(removed);
 
-      })
+      });
 
 
     });
 
+
+    app.put('/api/enroll/:callNo/:uni', function(req,res){
+      console.log(req.body);
+
+
+
+        Course.update({callNo:req.params.callNo},{$set:{'lastUpdated':new Date()},$push:{'enrolled':req.params.uni}},function(err,data){
+
+                if(err) res.send(err);
+
+                else
+                res.json(data);
+
+
+        });
+
+
+
+    });
     //ADMIN APIs
 
     //DataModel Changes API
