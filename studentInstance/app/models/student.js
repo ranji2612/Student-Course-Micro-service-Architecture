@@ -3,15 +3,8 @@
 var mongoose = require('mongoose');
 var Schema=mongoose.Schema;
 
-var StudentSchema = new Schema({
-        firstName  :   String,
-        lastName   :   String,
-        uni         :   String,
-        dob         :   Date,
-        enrolled    :   Array,
-        waitlisted  :   Array,
-        lastUpdated :   Date
-    });
+//Schema made linent - for changes during run time by admin
+var StudentSchema = new Schema({},{strict: false});
 
 module.exports=mongoose.model('Student',StudentSchema);
     

@@ -1,28 +1,48 @@
 //Importing Data Models
+
 var Student = require('./../models/student');
 
+//Seeded Schema changable by admin
+var validStudentSchema = {
+        firstName   : 1,
+        lastName    : 1,
+        uni         : 1,
+        dob         : 1,
+        enrolled    : 1,
+        waitlisted  : 1
+};
+
+function dropInvalidSchema(inputJson) {
+    for (key in inputJson) {
+        if (!(key in validStudentSchema))
+            delete inputJson[key];
+    }
+    return inputJson;
+};
 
 module.exports = function(app) {
 	
     //--------------------------------------CRUD for student--------------------------------------
     app.get('/api/getStudents', function(req, res) {
-        Student.find({}, function(err, data) {
+        
+        Student.find({},validStudentSchema, function(err, data) {
             if (err) res.send(err);
             res.json(data);
         });
     });
     
     app.get('/api/getStudent/:uni', function(req, res) {
-        Student.find({uni : req.params.uni}, function(err, data) {
+        Student.find({uni : req.params.uni},validStudentSchema, function(err, data) {
             if (err) res.send(err);
             res.json(data);
         });
     });
     
     app.post('/api/createStudent', function(req, res) {
-        console.log(req.body);
+        var newStudent = dropInvalidSchema(req.body);
+        newStudent['lastUpdated'] = new Date();
         
-        Student.create({firstName:req.body.firstName, lastName:req.body.lastName, dob : new Date(req.body.dob), enrolled:req.body.enrolled,waitListed:req.body.waitListed}, function(err, data) {
+        Student.create(newStudent, function(err, data) {
             if (err) res.send(err);
             res.json(data);
         });
@@ -85,7 +105,10 @@ module.exports = function(app) {
     //---------------------------- ADMIN APIs ----------------------------
     
     //----------------------------DataModel Changes API----------------------------
-    
+    app.post('/api/admin/schema', function(req,res) {
+        validStudentSchema = req.body.newSchema;
+        res.send(200);
+    });
     
     //Rest all requests
 	app.get('/*', function(req, res){
