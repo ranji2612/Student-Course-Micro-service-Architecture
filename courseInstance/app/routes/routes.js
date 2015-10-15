@@ -13,7 +13,7 @@ module.exports = function(app) {
     });
 
     app.get('/api/getCourses/:callNo', function(req, res) {
-        Course.find({uni : req.params.callNo}, function(err, data) {
+        Course.find({callNo : req.params.callNo}, function(err, data) {
             if (err) res.send(err);
             res.json(data);
         });
@@ -28,11 +28,24 @@ module.exports = function(app) {
         });
     });
 
-    app.put('/api/updateCourse/:uni', function(req, res) {
+    app.put('/api/updateCourse/:callNo', function(req, res) {
+      console.log(req.body);
+
+      Course.find({callNo: req.params.callNo}, function(err,data1) {
+        if(err) res.send(err);
+
+        Course.update({name:req.body.name, section:req.body.section, callNo:req.body.callNo,instructor:req.body.instructor,year : req.body.year, semester:req.body.semester, max:req.body.max, currentEnroll : req.body.currentEnroll, enrolled : req.body.enrolled, waitlisted : req.body.waitlisted,  lastUpdated : new Date(req.body.lastUpdated)} ,function(err, data2) {
+          if(err) ers.send(err);
+
+          res.json(data2);
+        });
+
+      });
+
 
     });
 
-    app.delete('/api/deleteCourse/:uni', function(req, res) {
+    app.delete('/api/deleteCourse/:callNo', function(req, res) {
 
     });
 
