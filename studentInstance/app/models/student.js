@@ -7,4 +7,3 @@ var Schema=mongoose.Schema;
 var StudentSchema = new Schema({},{strict: false});
 
 module.exports=mongoose.model('Student',StudentSchema);
-    
