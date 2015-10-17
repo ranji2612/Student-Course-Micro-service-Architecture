@@ -88,6 +88,8 @@ module.exports = function(app) {
 
     app.put('/api/enroll/:callNo/:uni', function(req,res){
       console.log(req.body);
+
+
         Course.update({callNo:req.params.callNo},{$set:{'lastUpdated':new Date()},$push:{'enrolled':req.params.uni}},function(err,data){
 
                 if(err) res.send(err);
@@ -107,6 +109,38 @@ module.exports = function(app) {
                 else
                 res.json(data);
         });
+    });
+
+    app.delete('/api/dropEnroll/:callNo', function(req, res) {
+
+      var students = req.body.students;
+
+      console.log(req.body);
+
+      Course.update({callNo:req.params.callNo},{$set:{'lastUpdated':new Date()},$pull:{'enrolled':{$in : students }}},function(err,removed){
+          if(err) res.send(err);
+
+          res.json(removed);
+
+      });
+
+
+    });
+
+    app.delete('/api/dropWaitlist/:callNo', function(req, res) {
+
+      var students = req.body.students;
+
+      console.log(req.body);
+
+      Course.update({callNo:req.params.callNo},{$set:{'lastUpdated':new Date()},$pull:{'waitlisted':{$in : students }}},function(err,removed){
+          if(err) res.send(err);
+
+          res.json(removed);
+
+      });
+
+
     });
 
 
