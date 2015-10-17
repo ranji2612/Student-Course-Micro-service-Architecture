@@ -1,0 +1,13 @@
+{
+  "name": "Router",
+  "version": "1.0.0",
+  "description": "The router acting as API gateway for Student Instance",
+  "main": "server.js",
+  "author": "Ranjith Kumar, Somdeep Dey, Harish Kathikeyan, Harshit Saxena",
+  "dependencies": {
+    "body-parser": "^1.14.1",
+    "express": "~4.0.0",
+    "http-proxy": "^1.11.2",
+    "mongoose": "^4.1.11"
+  }
+}
