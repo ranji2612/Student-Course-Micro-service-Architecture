@@ -9,8 +9,9 @@ var proxy = httpProxy.createProxyServer({});
 ////
 proxy.on('proxyRes', function (proxyRes, req, res) {
   console.log('RAW Response from the target', JSON.stringify(proxyRes.headers, true, 2));
-  if (req.method == 'GET' && req.url=='/api/getStudents')
+  if (req.method == 'GET' && req.url=='/api/getStudents') {
 	console.log('Yes this is good');
+  }
 });
 
 server = http.createServer(function(req,res) {
