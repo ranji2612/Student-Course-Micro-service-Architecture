@@ -1,23 +1,29 @@
 //Initial configuration
-var express  = require('express');
-var app      = express(); 								// create our app w/ express
-var port  	 = process.env.OPENSHIFT_INTERNAL_PORT || 8080; 				//
-var ipaddr 	 =  process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1";
+var express     = require('express');
+// create our app w/ express
+var app         = express();
 
-var bodyParser     = require('body-parser');			// To fetch data during posts
+//Get Config File
+var config      = require('./app/config/config.json');
+
+var port  	    = config.port; 				//
+var ipaddr      = process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1";
+
+			
 
 //Database
-var mongoose = require('mongoose'); 					// mongoose for mongodb
-var database = require('./app/config/database'); 			// load the database config
-var db = mongoose.connect(database.url);	// connect to mongoDB database on modulus.io
+var mongoose    = require('mongoose');
+var dbUrl       = config.dbUrl+config.instance+config.instanceNo;
+var db          = mongoose.connect(dbUrl);
 
 
 
 
 
 //Middle-tier configuration
-app.use(bodyParser.urlencoded({ extended: false }))    // parse application/x-www-form-urlencoded
-app.use(bodyParser.json())    // parse application/json
+var bodyParser  = require('body-parser');
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
 
 //route file
