@@ -6,7 +6,7 @@ var app         = express();
 //Get Config File
 var config      = require('./app/config/config.json');
 
-var port  	    = config.port; 				//
+var port  	    = config.port;
 var ipaddr      = process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1";
 
 			
@@ -17,7 +17,8 @@ var dbUrl       = config.dbUrl+config.instance+config.instanceNo;
 var db          = mongoose.connect(dbUrl);
 
 
-
+//Static files for API docs
+app.use(express.static('./docs'));
 
 
 //Middle-tier configuration

@@ -5,6 +5,7 @@
   "main": "server.js",
   "author": "Ranjith Kumar, Somdeep Dey, Harish Kathikeyan, Harshit Saxena",
   "dependencies": {
+    "apidoc": "^0.13.1",
     "body-parser": "^1.14.1",
     "express": "~4.0.0",
     "mongoose": "^4.1.11"
