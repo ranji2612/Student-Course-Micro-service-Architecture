@@ -8,7 +8,7 @@ Student Instance
 >https://rawgit.com/ranji2612/Student-Course-Micro-service-Architecture/master/studentInstance/docs/index.html
 
 Course Instance
->Will be updated
+>https://rawgit.com/ranji2612/Student-Course-Micro-service-Architecture/master/courseInstance/docs/index.html
 
 Router
 >Will be updated
