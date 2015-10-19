@@ -79,11 +79,14 @@ module.exports = function(app) {
         });
     });
 /**
- * @api {post} /api/createStudent Create a new Student
+ * @api {post} /api/createStudent/:uni Create a new Student
  * @apiVersion 0.3.0
  * @apiName PostStudent
  * @apiGroup Student
  * @apiPermission none
+ *
+ * @apiParam {String} uni UNI of the Student
+ * @apiError StudentNotFound   The <code>uni</code> of the Student was not found.
  *
    
  * @apiSuccess {String}   firstname     First Name of Student
@@ -94,7 +97,7 @@ module.exports = function(app) {
   * @apiSuccess {String[]} waitlisted  List of Waitlisted courses.
  *
   */
-    app.post('/api/createStudent', function(req, res) {
+    app.post('/api/createStudent/:uni', function(req, res) {
         var newStudent = dropInvalidSchema(req.body);
         newStudent['lastUpdated'] = new Date();
 
