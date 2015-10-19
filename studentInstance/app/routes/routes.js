@@ -275,12 +275,13 @@ module.exports = function(app) {
         res.send(200);
     });
 
-    //Rest all requests
+    //Serve API Docs
 	app.get('/apidocs', function(req, res){
 
 		res.sendfile('docs/index.html');
 
 	});
+    //Send error message for any other requests
     app.get('/*', function(req, res){
 
 		res.json({"error":"Invalid Request"});
