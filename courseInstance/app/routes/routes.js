@@ -1,6 +1,6 @@
 //Importing Data Models
 var Course = require('./../models/course');
-
+var Log = require('./../models/log');
 //Schema that is changeable by admin
 var validCourseSchema = {
   name  :   1,
@@ -14,6 +14,14 @@ var validCourseSchema = {
   enrolled : 1,
   waitlisted  :   1,
   lastUpdated :   1
+};
+
+var validLogSchema = {
+
+  uni : 1,
+  change : 1,
+  callNo : 1
+
 };
 
 function dropInvalidSchema(inputJson){
@@ -78,7 +86,7 @@ module.exports = function(app) {
   * @apiSuccess {String[]} enrolled     List of Students enrolled
   * @apiSuccess {String[]} waitlisted  List of Students Waitlisted
   * @apiSuccess {Date}  lastupdated  Timestamp of Last Update
-  
+
  * @apiError CourseNotFound   The <code>callNo</code> of the Course was not found.
  *
  * @apiErrorExample Response (example):
@@ -205,7 +213,7 @@ module.exports = function(app) {
  *     {
  *       "error": "Course does not exist"
  *     }
- 
+
  */
     app.put('/api/enroll/:callNo/:uni', function(req,res){
       console.log(req.body);
@@ -215,9 +223,20 @@ module.exports = function(app) {
 
                 if(err) res.send(err);
 
-                else
+
+
+
+                  Log.create({uni:req.params.uni,changes:"enrolled",callNo:req.params.callNo});
+
                 res.json(data);
+
         });
+
+
+
+
+
+
     });
 
 /**
@@ -244,7 +263,7 @@ module.exports = function(app) {
 
                 if(err) res.send(err);
 
-                else
+                Log.create({uni:req.params.uni,changes:"waitlisted",callNo:req.params.callNo});
                 res.json(data);
         });
     });
@@ -273,6 +292,13 @@ module.exports = function(app) {
 
       Course.update({callNo:req.params.callNo},{$set:{'lastUpdated':new Date()},$pull:{'enrolled':{$in : students }}},function(err,removed){
           if(err) res.send(err);
+
+          for (var i = 0; i < students.length; i++)
+          {
+
+
+            Log.create({uni:students[i],changes:"dropped",callNo:req.params.callNo});
+          }
 
           res.json(removed);
 
@@ -305,6 +331,15 @@ module.exports = function(app) {
 
       Course.update({callNo:req.params.callNo},{$set:{'lastUpdated':new Date()},$pull:{'waitlisted':{$in : students }}},function(err,removed){
           if(err) res.send(err);
+
+          for (var i = 0; i < students.length; i++)
+          {
+
+            Log.create({uni:students[i],changes:"dropWaitlisted",callNo:req.params.callNo});
+
+          }
+
+
 
           res.json(removed);
 
