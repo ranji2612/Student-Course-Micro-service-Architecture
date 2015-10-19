@@ -5,7 +5,7 @@ API Docs
 -------
 
 Student Instance
->https://rawgit.com/ranji2612/Student-Course-Micro-service-Architecture/master/studentInstance/docs/index.html
+>https://rawgit.com/ranji2612/Student-Course-Micro-service-Architecture/master/studentInstance1/docs/index.html
 
 Course Instance
 >https://rawgit.com/ranji2612/Student-Course-Micro-service-Architecture/master/courseInstance/docs/index.html
