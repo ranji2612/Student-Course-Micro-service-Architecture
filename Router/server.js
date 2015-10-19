@@ -20,4 +20,3 @@ server = http.createServer(function(req,res) {
 	proxy.proxyRequest(req, res, target);
 });
 server.listen(8000);
-

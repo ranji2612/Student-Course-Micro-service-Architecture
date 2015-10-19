@@ -1,0 +1,12 @@
+{
+  "name": "ReferentialIntegrity",
+  "version": "1.0.0",
+  "description": "Instance for maintaining referential integrity",
+  "main": "server.js",
+  "author": "Ranjith Kumar, Somdeep Dey, Harish Kathikeyan, Harshit Saxena",
+  "dependencies": {
+    "body-parser": "^1.14.1",
+    "express": "~4.0.0",
+    "mongoose": "^4.1.11"
+  }
+}
