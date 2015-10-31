@@ -1,7 +1,7 @@
 //Importing Data Models
 
 var Student = require('./../models/student');
-
+var Log = require('./../models/log');
 //Seeded Schema changable by admin
 var validStudentSchema = {
         firstName   : 1,
@@ -62,7 +62,7 @@ module.exports = function(app) {
  * @apiSuccess {Date}     dob           Date of Birth of Student
  * @apiSuccess {String[]} enrolled     List of Courses enrolled.
   * @apiSuccess {String[]} waitlisted  List of Waitlisted courses.
-  
+
  * @apiError StudentNotFound   The <code>uni</code> of the Student was not found.
  *
  * @apiErrorExample Response (example):
@@ -88,7 +88,7 @@ module.exports = function(app) {
  * @apiParam {String} uni UNI of the Student
  * @apiError StudentNotFound   The <code>uni</code> of the Student was not found.
  *
-   
+
  * @apiSuccess {String}   firstname     First Name of Student
  * @apiSuccess {String}   lastname      Last Name of Student
  * @apiSuccess {String}   uni           UNI of Student
@@ -151,10 +151,16 @@ module.exports = function(app) {
 
  */
     app.delete('/api/deleteStudent/:uni', function(req, res) {
-        Student.remove({uni:req.params.uni}, function(err,data) {
+
+      Student.find({uni:req.params.uni},{"enrolled":1},function(er,data1){
+console.log(data1);
+  Log.create({uni:req.params.uni,changes:"dropped",callNo:data1});
+res.json(data1);
+} );
+    /*    Student.remove({uni:req.params.uni}, function(err,data) {
             if(err) res.send(err);
             res.json(data);
-        });
+        });*/
     });
 
     //----------------------------Course Enrollment--------------------------------------
