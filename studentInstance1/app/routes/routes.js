@@ -1,3 +1,4 @@
+
 //Importing Data Models
 
 var Student = require('./../models/student');
@@ -55,14 +56,12 @@ module.exports = function(app) {
  *
  * @apiParam {String} uni The UNI of student.
  *
-
  * @apiSuccess {String}   firstname     First Name of Student
  * @apiSuccess {String}   lastname      Last Name of Student
  * @apiSuccess {String}   uni           UNI of Student
  * @apiSuccess {Date}     dob           Date of Birth of Student
  * @apiSuccess {String[]} enrolled     List of Courses enrolled.
   * @apiSuccess {String[]} waitlisted  List of Waitlisted courses.
-
  * @apiError StudentNotFound   The <code>uni</code> of the Student was not found.
  *
  * @apiErrorExample Response (example):
@@ -88,7 +87,6 @@ module.exports = function(app) {
  * @apiParam {String} uni UNI of the Student
  * @apiError StudentNotFound   The <code>uni</code> of the Student was not found.
  *
-
  * @apiSuccess {String}   firstname     First Name of Student
  * @apiSuccess {String}   lastname      Last Name of Student
  * @apiSuccess {String}   uni           UNI of Student
@@ -121,7 +119,6 @@ module.exports = function(app) {
  *     {
  *       "error": "Student does not exist"
  *     }
-
  */
     app.put('/api/updateStudent/:uni', function(req, res) {
         //Data to be updated
@@ -148,19 +145,26 @@ module.exports = function(app) {
  *     {
  *       "error": "Student does not exist"
  *     }
-
  */
     app.delete('/api/deleteStudent/:uni', function(req, res) {
 
-      Student.find({uni:req.params.uni},{"enrolled":1},function(er,data1){
-console.log(data1);
-  Log.create({uni:req.params.uni,changes:"dropped",callNo:data1});
-res.json(data1);
-} );
-    /*    Student.remove({uni:req.params.uni}, function(err,data) {
+      Student.findOne({uni:req.params.uni},{"enrolled":1},function(er,data1){
+//console.log(data1);
+var str= JSON.parse(JSON.stringify(data1), function(k, v) {
+  //console.log(v); // log the current property name, the last is "".
+  return v;       // return the unchanged property value.
+});
+          //console.log("Enrolled:"+str["enrolled"]);
+          var enrolled_courses;
+          enrolled_courses = str["enrolled"];
+          console.log("Enrolled Courses" + enrolled_courses);
+          Log.create({uni:req.params.uni,changes:"dropped",callNo:enrolled_courses});
+          Student.remove({uni:req.params.uni}, function(err,data) {
             if(err) res.send(err);
             res.json(data);
-        });*/
+        });
+} );   
+        
     });
 
     //----------------------------Course Enrollment--------------------------------------
@@ -179,13 +183,13 @@ res.json(data1);
  *     {
  *       "error": "Student does not exist"
  *     }
-
  */
     // Enroll in one / group of course
     app.put('/api/enroll/:uni', function(req, res) {
         var courses = req.body.courses;
         Student.update({uni:req.params.uni},{$set:{'lastUpdated':new Date()},$pushAll : {'enrolled':courses}}, function(err, data) {
             if(err) res.send(err);
+            Log.create({uni:req.params.uni,changes:"enrolled",callNo:courses});
             res.json(data);
         });
     });
@@ -211,6 +215,7 @@ res.json(data1);
         var courses = req.body.courses;
         Student.update({uni:req.params.uni},{$set:{'lastUpdated':new Date()},$pushAll : {'waitlisted':courses}}, function(err, data) {
             if(err) res.send(err);
+            Log.create({uni:req.params.uni,changes:"waitlisted",callNo:courses});
             res.json(data);
         });
     });
@@ -234,6 +239,7 @@ res.json(data1);
     //Un-enroll from one / more course
     app.put('/api/dropcourse/:uni', function(req, res) {
         var courses = req.body.courses;
+        Log.create({uni:req.params.uni,changes:"unenrolled",callNo:courses});
         Student.update({uni:req.params.uni},{$set:{'lastUpdated':new Date()},$pull : {'enrolled': { $in : courses}}}, function(err, data) {
             if(err) res.send(err);
             res.json(data);
@@ -259,6 +265,7 @@ res.json(data1);
     //Remove from one/more waitlisted course
     app.put('/api/unwaitlist/:uni', function(req, res) {
         var courses = req.body.courses;
+        Log.create({uni:req.params.uni,changes:"unwaitlist",callNo:courses});
         Student.update({uni:req.params.uni},{$set:{'lastUpdated':new Date()},$pull : {'waitlisted': { $in : courses}}}, function(err, data) {
             if(err) res.send(err);
             res.json(data);
@@ -275,9 +282,7 @@ res.json(data1);
  * @apiPermission Admin
  *
  * @apiSuccess 200
-
  *
-
  */
     app.post('/api/admin/schema', function(req,res) {
         validStudentSchema = req.body.newSchema;
