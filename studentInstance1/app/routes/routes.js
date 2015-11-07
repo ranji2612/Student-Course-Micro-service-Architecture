@@ -1,3 +1,5 @@
+var amqp = require('amqplib');
+var when = require('when');
 
 //Importing Data Models
 
@@ -148,17 +150,45 @@ module.exports = function(app) {
  */
     app.delete('/api/deleteStudent/:uni', function(req, res) {
 
-      Student.findOne({uni:req.params.uni},{"enrolled":1},function(er,data1){
+      Student.findOne({uni:req.params.uni},function(er,data1){
 //console.log(data1);
 var str= JSON.parse(JSON.stringify(data1), function(k, v) {
   //console.log(v); // log the current property name, the last is "".
   return v;       // return the unchanged property value.
 });
           //console.log("Enrolled:"+str["enrolled"]);
-          var enrolled_courses;
+          
+          var enrolled_courses=" ";
+          if(str["enrolled"])
           enrolled_courses = str["enrolled"];
-          console.log("Enrolled Courses" + enrolled_courses);
-          Log.create({uni:req.params.uni,changes:"dropped",callNo:enrolled_courses});
+          var waitlisted_courses=" ";
+          if(str["waitlisted"])
+          waitlisted_courses=str["waitlisted"];
+          console.log("Enrolled Courses:" + enrolled_courses);
+          console.log("Waitlisted Courses:" + waitlisted_courses);
+          if(enrolled_courses!=" ")
+          Log.create({uni:req.params.uni,changes:"unenroll",callNo:enrolled_courses});
+          if(waitlisted_courses!=" ")
+          Log.create({uni:req.params.uni,changes:"unwaitlist",callNo:waitlisted_courses});
+                  amqp.connect('amqp://localhost').then(function(conn) {
+                  return when(conn.createChannel().then(function(ch) {
+                  var ex = 'topic_logs';
+                  var ok = ch.assertExchange(ex, 'topic', {durable: false});
+                    return ok.then(function() {
+              if(enrolled_courses!=" "){
+                        var key="unenroll";
+              var message='{"uni":"'+req.params.uni+'","callNo":'+JSON.stringify(enrolled_courses)+'}';
+              ch.publish(ex, key, new Buffer(message));
+              console.log(" [x] Sent %s:'%s'", key, message);}
+                      if(waitlisted_courses!=" "){  
+              var key="unwaitlist";
+              var message='{"uni":"'+req.params.uni+'","callNo":'+JSON.stringify(waitlisted_courses)+'}';
+              ch.publish(ex, key, new Buffer(message));
+              console.log(" [x] Sent %s:'%s'", key, message);}
+              return ch.close();
+            });
+          })).ensure(function() { conn.close(); })
+        }).then(null, console.log);
           Student.remove({uni:req.params.uni}, function(err,data) {
             if(err) res.send(err);
             res.json(data);
@@ -189,7 +219,28 @@ var str= JSON.parse(JSON.stringify(data1), function(k, v) {
         var courses = req.body.courses;
         Student.update({uni:req.params.uni},{$set:{'lastUpdated':new Date()},$pushAll : {'enrolled':courses}}, function(err, data) {
             if(err) res.send(err);
-            Log.create({uni:req.params.uni,changes:"enrolled",callNo:courses});
+            if(courses)
+            {
+            Log.create({uni:req.params.uni,changes:"enroll",callNo:courses});
+             amqp.connect('amqp://localhost').then(function(conn) {
+                  return when(conn.createChannel().then(function(ch) {
+                  var ex = 'topic_logs';
+                  var ok = ch.assertExchange(ex, 'topic', {durable: false});
+                    return ok.then(function() {
+                    var key="enroll";
+                    var message='{"uni":"'+req.params.uni+'","callNo":'+JSON.stringify(courses)+'}';
+              ch.publish(ex, key, new Buffer(message));
+              console.log(" [x] Sent %s:'%s'", key, message);
+              return ch.close();
+            });
+          })).ensure(function() { conn.close(); })
+        }).then(null, console.log);
+            
+            
+            
+            
+            
+            }
             res.json(data);
         });
     });
@@ -214,8 +265,24 @@ var str= JSON.parse(JSON.stringify(data1), function(k, v) {
     app.put('/api/waitlist/:uni', function(req, res) {
         var courses = req.body.courses;
         Student.update({uni:req.params.uni},{$set:{'lastUpdated':new Date()},$pushAll : {'waitlisted':courses}}, function(err, data) {
-            if(err) res.send(err);
-            Log.create({uni:req.params.uni,changes:"waitlisted",callNo:courses});
+                        if(err) res.send(err);
+            if(courses)
+            {
+            Log.create({uni:req.params.uni,changes:"waitlist",callNo:courses});
+             amqp.connect('amqp://localhost').then(function(conn) {
+                  return when(conn.createChannel().then(function(ch) {
+                  var ex = 'topic_logs';
+                  var ok = ch.assertExchange(ex, 'topic', {durable: false});
+                    return ok.then(function() {
+                    var key="waitlist";
+                    var message='{"uni":"'+req.params.uni+'","callNo":'+JSON.stringify(courses)+'}';
+              ch.publish(ex, key, new Buffer(message));
+              console.log(" [x] Sent %s:'%s'", key, message);
+              return ch.close();
+            });
+          })).ensure(function() { conn.close(); })
+        }).then(null, console.log);
+            }
             res.json(data);
         });
     });
@@ -239,7 +306,25 @@ var str= JSON.parse(JSON.stringify(data1), function(k, v) {
     //Un-enroll from one / more course
     app.put('/api/dropcourse/:uni', function(req, res) {
         var courses = req.body.courses;
-        Log.create({uni:req.params.uni,changes:"unenrolled",callNo:courses});
+        if(courses)
+        {
+        Log.create({uni:req.params.uni,changes:"unenroll",callNo:courses});
+        amqp.connect('amqp://localhost').then(function(conn) {
+                  return when(conn.createChannel().then(function(ch) {
+                  var ex = 'topic_logs';
+                  var ok = ch.assertExchange(ex, 'topic', {durable: false});
+                    return ok.then(function() {
+                    var key="unenroll";
+                    var message='{"uni":"'+req.params.uni+'","callNo":'+JSON.stringify(courses)+'}';
+              ch.publish(ex, key, new Buffer(message));
+              console.log(" [x] Sent %s:'%s'", key, message);
+              return ch.close();
+            });
+          })).ensure(function() { conn.close(); })
+        }).then(null, console.log);
+            
+            
+        }
         Student.update({uni:req.params.uni},{$set:{'lastUpdated':new Date()},$pull : {'enrolled': { $in : courses}}}, function(err, data) {
             if(err) res.send(err);
             res.json(data);
@@ -265,7 +350,25 @@ var str= JSON.parse(JSON.stringify(data1), function(k, v) {
     //Remove from one/more waitlisted course
     app.put('/api/unwaitlist/:uni', function(req, res) {
         var courses = req.body.courses;
+        if(courses)
+        {
         Log.create({uni:req.params.uni,changes:"unwaitlist",callNo:courses});
+         amqp.connect('amqp://localhost').then(function(conn) {
+                  return when(conn.createChannel().then(function(ch) {
+                  var ex = 'topic_logs';
+                  var ok = ch.assertExchange(ex, 'topic', {durable: false});
+                    return ok.then(function() {
+                    var key="unwaitlist";
+                    var message='{"uni":"'+req.params.uni+'","callNo":'+JSON.stringify(courses)+'}';
+              ch.publish(ex, key, new Buffer(message));
+              console.log(" [x] Sent %s:'%s'", key, message);
+              return ch.close();
+            });
+          })).ensure(function() { conn.close(); })
+        }).then(null, console.log);         
+            
+            
+        }
         Student.update({uni:req.params.uni},{$set:{'lastUpdated':new Date()},$pull : {'waitlisted': { $in : courses}}}, function(err, data) {
             if(err) res.send(err);
             res.json(data);
