@@ -226,7 +226,7 @@ module.exports = function(app) {
 
 
 
-                  Log.create({uni:req.params.uni,changes:"enrolled",callNo:req.params.callNo});
+                  Log.create({uni:req.params.uni,changes:"enrolled",callNo:req.params.callNo,updatedAt: new Date()});
 
                 res.json(data);
 
@@ -263,7 +263,7 @@ module.exports = function(app) {
 
                 if(err) res.send(err);
 
-                Log.create({uni:req.params.uni,changes:"waitlisted",callNo:req.params.callNo});
+                Log.create({uni:req.params.uni,changes:"waitlisted",callNo:req.params.callNo,updatedAt: new Date()});
                 res.json(data);
         });
     });
@@ -297,7 +297,7 @@ module.exports = function(app) {
           {
 
 
-            Log.create({uni:students[i],changes:"dropped",callNo:req.params.callNo});
+            Log.create({uni:students[i],changes:"dropped",callNo:req.params.callNo,updatedAt: new Date()});
           }
 
           res.json(removed);
@@ -335,7 +335,7 @@ module.exports = function(app) {
           for (var i = 0; i < students.length; i++)
           {
 
-            Log.create({uni:students[i],changes:"dropWaitlisted",callNo:req.params.callNo});
+            Log.create({uni:students[i],changes:"dropWaitlisted",callNo:req.params.callNo,updatedAt: new Date()});
 
           }
 
@@ -348,7 +348,13 @@ module.exports = function(app) {
 
     });
 
-
+//-------------------- API for LOGS --------------------------
+app.get('/api/logs/:time', function(req,res) {
+    Log.find({}, function(err, data) {
+        if (err) res.send(err);
+        res.json(data);
+    });
+});
 
 //---------------------ADMIN APIs---------------------
 
