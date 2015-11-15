@@ -1,6 +1,6 @@
 //Importing Data Models
 
-var = require('./../models/ref');
+var ref =  require('./../models/ref');
 
 //Seeded Schema changable by admin
 var validRefSchema = {};
