@@ -316,7 +316,7 @@ API for slective delete
 
 */
 
-app.put('/api/unEnroll/:callNo/:uni', function(req, res) {
+app.put('/api/unenroll/:callNo/:uni', function(req, res) {
 
   var students = req.body.students;
 
@@ -337,6 +337,26 @@ app.put('/api/unEnroll/:callNo/:uni', function(req, res) {
 
 });
 
+
+
+app.put('/api/unwaitlist/:callNo/:uni', function(req, res) {
+
+  Course.update({callNo:req.params.callNo},{$set:{'lastUpdated':new Date()},$pull:{'waitlisted':req.params.uni}},function(err,removed){
+      if(err) res.send(err);
+
+
+        Log.create({uni:req.params.uni,changes:"unwaitlisted",callNo:req.params.callNo,updatedAt: new Date()});
+
+
+
+
+
+      res.json(removed);
+
+  });
+
+
+});
 
 /**
  * @api {delete} /api/dropWaitlist/:callNo Drop from waitlist one or more students
