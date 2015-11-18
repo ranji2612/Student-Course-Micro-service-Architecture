@@ -306,6 +306,38 @@ module.exports = function(app) {
 
 
     });
+
+
+/**
+
+API for slective delete
+
+
+
+*/
+
+app.put('/api/unEnroll/:callNo/:uni', function(req, res) {
+
+  var students = req.body.students;
+
+  console.log(req.body);
+
+  Course.update({callNo:req.params.callNo},{$set:{'lastUpdated':new Date()},$pull:{'enrolled':req.params.uni}},function(err,removed){
+      if(err) res.send(err);
+
+
+
+        Log.create({uni:req.params.uni,changes:"dropped",callNo:req.params.callNo,updatedAt: new Date()});
+
+
+      res.json(removed);
+
+  });
+
+
+});
+
+
 /**
  * @api {delete} /api/dropWaitlist/:callNo Drop from waitlist one or more students
  * @apiVersion 0.3.0
