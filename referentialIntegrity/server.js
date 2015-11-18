@@ -1,36 +1,80 @@
-//Initial configuration
-var express     = require('express');
-// create our app w/ express
-var app         = express();
+#!/usr/bin/env node
 
-//Get Config File
-var config      = require('./app/config/config.json');
+var amqp = require('amqplib');
+var basename = require('path').basename;
+var all = require('when').all;
+var http = require('http');
+var request = require("request");
 
-var port  	    = config.port; 				//
-var ipaddr      = process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1";
+/*var keys = process.argv.slice(2);
+if (keys.length < 1) {
+  console.log('Usage: %s pattern [pattern...]',
+              basename(process.argv[1]));
+  process.exit(1);
+}*/
 
+amqp.connect('amqp://localhost').then(function(conn) {
+  process.once('SIGINT', function() { conn.close(); });
+  return conn.createChannel().then(function(ch) {
+    var ex = 'topic_logs';
+    var ok = ch.assertExchange(ex, 'topic', {durable: false});
 
+    ok = ok.then(function() {
+      return ch.assertQueue('', {exclusive: true});
+    });
 
-//Database
-var mongoose    = require('mongoose');
-var dbUrl       = config.dbUrl+config.instance+config.instanceNo;
-var db          = mongoose.connect(dbUrl);
+    ok = ok.then(function(qok) {
+      var queue = qok.queue;
+    var keys=["enroll","waitlist","unenroll","unwaitlist"];
+      return all(keys.map(function(rk) {
+        ch.bindQueue(queue, ex, rk);
+      })).then(function() { return queue; });
+    });
 
+    ok = ok.then(function(queue) {
+      return ch.consume(queue, logMessage, {noAck: true});
+    });
+    return ok.then(function() {
+      console.log(' [*] Waiting for logs. To exit press CTRL+C.');
+    });
 
+    function logMessage(msg) {
+      console.log(" [x] %s:'%s'",
+                  msg.fields.routingKey,
+                  msg.content.toString());
+          var sms=msg.content.toString();
+        var sms_json=JSON.parse(sms);
+        console.log(sms_json);
+        console.log("UNI:"+sms_json.uni);
+        for(call in sms_json.callNo){
+        console.log(sms_json.callNo[call]);
 
+        //console.log(sms_json.callNo[0]);
+        var pat="/api/"+msg.fields.routingKey+"/"+sms_json.callNo[call]+"/"+sms_json.uni.toString();
+                    var options = {
+            host: 'localhost',
+            path: pat,
+            port: 9082,
+            method: 'PUT'
+            };
 
+            var callback = function(response) {
+            var str = '';
 
-//Middle-tier configuration
-var bodyParser  = require('body-parser');
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+            //another chunk of data has been recieved, so append it to `str`
+            response.on('data', function(chunk) {
+            str += chunk;
+            });
 
+            //the whole response has been recieved, so we just print it out here
+            response.on('end', function() {
+            console.log(str);
+            });
+            };
 
-//route file
-require('./app/routes/routes.js')(app);
+            http.request(options, callback).end();
 
-
-//Start the awesomeness
-app.listen( port, ipaddr, function() {
-	console.log('Magic happens on port ', port, ipaddr);
-});
+          }
+      }
+  });
+}).then(null, console.warn);
