@@ -8,6 +8,7 @@ module.exports =  {
             var ex = 'topic_logs';
             var ok = ch.assertExchange(ex, 'topic', {durable: false});
             return ok.then(function() {
+                message = JSON.stringify(message);
               ch.publish(ex, key, new Buffer(message));
               console.log(" [x] Sent %s:'%s'", key, message);
               return ch.close();

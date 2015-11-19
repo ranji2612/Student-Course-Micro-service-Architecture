@@ -51,7 +51,7 @@ module.exports =  {
     },
     
     removeCourse : function(res, callNo) {
-        Course.remove({callNo:req.params.callNo},function(err,data){
+        Course.remove({callNo:callNo},function(err,data){
             if (err) {
                 if (typeof(res)==="undefined")
                     return err;
