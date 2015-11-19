@@ -1,6 +1,6 @@
 var amqp = require('amqplib');
 var when = require('when');
-
+var studentLogic  = require('./../logic/studentFunctionality');
 //Importing Data Models
 
 var Student = require('./../models/student');
@@ -11,8 +11,7 @@ var validStudentSchema = {
         lastName    : 1,
         uni         : 1,
         dob         : 1,
-        enrolled    : 1,
-        waitlisted  : 1
+        enrolled    : 1
 };
 
 function dropInvalidSchema(inputJson) {
@@ -39,14 +38,17 @@ module.exports = function(app) {
  * @apiSuccess {String}   uni           UNI of Student
  * @apiSuccess {Date}     dob           Date of Birth of Student
  * @apiSuccess {String[]} enrolled     List of Courses enrolled.
-  * @apiSuccess {String[]} waitlisted  List of Waitlisted courses.
- */
-    app.get('/api/getStudents', function(req, res) {
 
-        Student.find({},validStudentSchema, function(err, data) {
-            if (err) res.send(err);
-            res.json(data);
-        });
+ */
+    app.get('/api/student', function(req, res) {
+
+        // Student.find({},validStudentSchema, function(err, data) {
+        //     if (err) res.send(err);
+        //     res.json(data);
+        // });
+        studentLogic.getAllStudents(res, validStudentSchema);
+
+
     });
     /**
  * @api {get} api/getStudent/:uni Read data of a student
@@ -63,7 +65,7 @@ module.exports = function(app) {
  * @apiSuccess {String}   uni           UNI of Student
  * @apiSuccess {Date}     dob           Date of Birth of Student
  * @apiSuccess {String[]} enrolled     List of Courses enrolled.
-  * @apiSuccess {String[]} waitlisted  List of Waitlisted courses.
+
  * @apiError StudentNotFound   The <code>uni</code> of the Student was not found.
  *
  * @apiErrorExample Response (example):
@@ -73,7 +75,7 @@ module.exports = function(app) {
  *     }
  */
 
-    app.get('/api/getStudent/:uni', function(req, res) {
+    app.get('/api/student/:uni', function(req, res) {
         Student.find({uni : req.params.uni},validStudentSchema, function(err, data) {
             if (err) res.send(err);
             res.json(data);
@@ -94,10 +96,10 @@ module.exports = function(app) {
  * @apiSuccess {String}   uni           UNI of Student
  * @apiSuccess {Date}     dob           Date of Birth of Student
  * @apiSuccess {String[]} enrolled     List of Courses enrolled.
-  * @apiSuccess {String[]} waitlisted  List of Waitlisted courses.
+
  *
   */
-    app.post('/api/createStudent/:uni', function(req, res) {
+    app.post('/api/student/:uni', function(req, res) {
         var newStudent = dropInvalidSchema(req.body);
         newStudent['lastUpdated'] = new Date();
 
@@ -122,7 +124,7 @@ module.exports = function(app) {
  *       "error": "Student does not exist"
  *     }
  */
-    app.put('/api/updateStudent/:uni', function(req, res) {
+    app.put('/api/student/:uni', function(req, res) {
         //Data to be updated
         var newData = req.body.updatedData;
         newData['lastUpdated'] = new Date();
@@ -148,7 +150,7 @@ module.exports = function(app) {
  *       "error": "Student does not exist"
  *     }
  */
-    app.delete('/api/deleteStudent/:uni', function(req, res) {
+    app.delete('/api/student/:uni', function(req, res) {
 
       Student.findOne({uni:req.params.uni},function(er,data1){
 //console.log(data1);
@@ -157,20 +159,15 @@ var str= JSON.parse(JSON.stringify(data1), function(k, v) {
   return v;       // return the unchanged property value.
 });
           //console.log("Enrolled:"+str["enrolled"]);
-          
+
           var enrolled_courses=" ";
           if(str["enrolled"])
           enrolled_courses = str["enrolled"];
-          var waitlisted_courses=" ";
-          if(str["waitlisted"])
-          waitlisted_courses=str["waitlisted"];
-          console.log("Enrolled Courses:" + enrolled_courses);
-          console.log("Waitlisted Courses:" + waitlisted_courses);
+                    console.log("Enrolled Courses:" + enrolled_courses);
+
           if(enrolled_courses!=" ")
           Log.create({uni:req.params.uni,changes:"unenroll",callNo:enrolled_courses});
-          if(waitlisted_courses!=" ")
-          Log.create({uni:req.params.uni,changes:"unwaitlist",callNo:waitlisted_courses});
-                  amqp.connect('amqp://localhost').then(function(conn) {
+                            amqp.connect('amqp://localhost').then(function(conn) {
                   return when(conn.createChannel().then(function(ch) {
                   var ex = 'topic_logs';
                   var ok = ch.assertExchange(ex, 'topic', {durable: false});
@@ -180,11 +177,7 @@ var str= JSON.parse(JSON.stringify(data1), function(k, v) {
               var message='{"uni":"'+req.params.uni+'","callNo":'+JSON.stringify(enrolled_courses)+'}';
               ch.publish(ex, key, new Buffer(message));
               console.log(" [x] Sent %s:'%s'", key, message);}
-                      if(waitlisted_courses!=" "){  
-              var key="unwaitlist";
-              var message='{"uni":"'+req.params.uni+'","callNo":'+JSON.stringify(waitlisted_courses)+'}';
-              ch.publish(ex, key, new Buffer(message));
-              console.log(" [x] Sent %s:'%s'", key, message);}
+
               return ch.close();
             });
           })).ensure(function() { conn.close(); })
@@ -193,8 +186,8 @@ var str= JSON.parse(JSON.stringify(data1), function(k, v) {
             if(err) res.send(err);
             res.json(data);
         });
-} );   
-        
+} );
+
     });
 
     //----------------------------Course Enrollment--------------------------------------
@@ -215,7 +208,7 @@ var str= JSON.parse(JSON.stringify(data1), function(k, v) {
  *     }
  */
     // Enroll in one / group of course
-    app.put('/api/enroll/:uni', function(req, res) {
+    app.put('/api/student/:uni/course', function(req, res) {
         var courses = req.body.courses;
         Student.update({uni:req.params.uni},{$set:{'lastUpdated':new Date()},$pushAll : {'enrolled':courses}}, function(err, data) {
             if(err) res.send(err);
@@ -235,53 +228,11 @@ var str= JSON.parse(JSON.stringify(data1), function(k, v) {
             });
           })).ensure(function() { conn.close(); })
         }).then(null, console.log);
-            
-            
-            
-            
-            
-            }
-            res.json(data);
-        });
-    });
-/**
- * @api {put} /api/waitlist/:uni Place student in waitlist
- * @apiVersion 0.3.0
- * @apiName PutWaitlist
- * @apiGroup Student
- * @apiPermission none
- *
- * @apiParam {String} uni UNI of the Student
- *
- * @apiError StudentNotFound   The <code>uni</code> of the Student was not found.
- *
- * @apiErrorExample Response (example):
- *     HTTP/1.1 401 No Student
- *     {
- *       "error": "Student does not exist"
- *     }
- */
-    //Waitlist in one/group of course
-    app.put('/api/waitlist/:uni', function(req, res) {
-        var courses = req.body.courses;
-        Student.update({uni:req.params.uni},{$set:{'lastUpdated':new Date()},$pushAll : {'waitlisted':courses}}, function(err, data) {
-                        if(err) res.send(err);
-            if(courses)
-            {
-            Log.create({uni:req.params.uni,changes:"waitlist",callNo:courses});
-             amqp.connect('amqp://localhost').then(function(conn) {
-                  return when(conn.createChannel().then(function(ch) {
-                  var ex = 'topic_logs';
-                  var ok = ch.assertExchange(ex, 'topic', {durable: false});
-                    return ok.then(function() {
-                    var key="waitlist";
-                    var message='{"uni":"'+req.params.uni+'","callNo":'+JSON.stringify(courses)+'}';
-              ch.publish(ex, key, new Buffer(message));
-              console.log(" [x] Sent %s:'%s'", key, message);
-              return ch.close();
-            });
-          })).ensure(function() { conn.close(); })
-        }).then(null, console.log);
+
+
+
+
+
             }
             res.json(data);
         });
@@ -304,7 +255,7 @@ var str= JSON.parse(JSON.stringify(data1), function(k, v) {
  *     }
  */
     //Un-enroll from one / more course
-    app.put('/api/dropcourse/:uni', function(req, res) {
+    app.delete('/api/student/:uni/course', function(req, res) {
         var courses = req.body.courses;
         if(courses)
         {
@@ -322,54 +273,10 @@ var str= JSON.parse(JSON.stringify(data1), function(k, v) {
             });
           })).ensure(function() { conn.close(); })
         }).then(null, console.log);
-            
-            
+
+
         }
         Student.update({uni:req.params.uni},{$set:{'lastUpdated':new Date()},$pull : {'enrolled': { $in : courses}}}, function(err, data) {
-            if(err) res.send(err);
-            res.json(data);
-        });
-    });
-/**
- * @api {put} /api/unwaitlist/:uni Drop from waitlist one or more courses
- * @apiVersion 0.3.0
- * @apiName PutUnwaitlist
- * @apiGroup Student
- * @apiPermission none
- *
- * @apiParam {String} uni UNI of the Student
- *
- * @apiError StudentNotFound   The <code>uni</code> of the Student was not found.
- *
- * @apiErrorExample Response (example):
- *     HTTP/1.1 401 No Student
- *     {
- *       "error": "Student does not exist"
- *     }
- */
-    //Remove from one/more waitlisted course
-    app.put('/api/unwaitlist/:uni', function(req, res) {
-        var courses = req.body.courses;
-        if(courses)
-        {
-        Log.create({uni:req.params.uni,changes:"unwaitlist",callNo:courses});
-         amqp.connect('amqp://localhost').then(function(conn) {
-                  return when(conn.createChannel().then(function(ch) {
-                  var ex = 'topic_logs';
-                  var ok = ch.assertExchange(ex, 'topic', {durable: false});
-                    return ok.then(function() {
-                    var key="unwaitlist";
-                    var message='{"uni":"'+req.params.uni+'","callNo":'+JSON.stringify(courses)+'}';
-              ch.publish(ex, key, new Buffer(message));
-              console.log(" [x] Sent %s:'%s'", key, message);
-              return ch.close();
-            });
-          })).ensure(function() { conn.close(); })
-        }).then(null, console.log);         
-            
-            
-        }
-        Student.update({uni:req.params.uni},{$set:{'lastUpdated':new Date()},$pull : {'waitlisted': { $in : courses}}}, function(err, data) {
             if(err) res.send(err);
             res.json(data);
         });
@@ -387,7 +294,7 @@ var str= JSON.parse(JSON.stringify(data1), function(k, v) {
  * @apiSuccess 200
  *
  */
-    app.post('/api/admin/schema', function(req,res) {
+    app.post('/api/admin/student/schema', function(req,res) {
         validStudentSchema = req.body.newSchema;
         res.send(200);
     });
