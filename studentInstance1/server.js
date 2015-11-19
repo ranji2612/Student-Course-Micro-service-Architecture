@@ -29,6 +29,8 @@ app.use(bodyParser.json());
 
 //route file
 require('./app/routes/routes.js')(app);
+//Queue Listener
+require('./app/routes/queueListener.js');
 
 
 //Start the awesomeness

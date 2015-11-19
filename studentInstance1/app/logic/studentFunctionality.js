@@ -4,67 +4,46 @@ var Log = require('./../models/log');
 // Has all the business Logic.
 
 module.exports =  {
-    createCourse  : function(res, data) {
-        Course.create(newCourse,function(err, data) {
-            if (err) res.send(err);
-            res.json(data);
+    createStudent  : function(res, data) {
+    },
+
+    getStudent : function(res, validStudentSchema, searchCondition) {
+        Student.find(searchCondition,validStudentSchema,function(err, data) {
+            if (err) {
+                if (typeof(res)==="undefined")
+                    return err;
+                else
+                    res.send(err);
+            }
+            if (typeof(res)==="undefined")
+                return data;
+            else
+                res.json(data);
         });
     },
+
+    updateStudent : function(res, updateData, searchCondition,options) {
+        if (typeof(options)==="undefined")
+            options = {multi:false};
+        Student.update(searchCondition,updateData,options, function(err,data) {
+            if (err) {
+                if (typeof(res)==="undefined")
+                    return err;
+                else
+                    res.send(err);
+            }
+            if (typeof(res)==="undefined")
+                return data;
+            else
+                res.json(data);
+        });
+    },
+
+    removeStudent : function() {
+    },
+    
     getAllStudents : function(res, validStudentSchema) {
-        Student.find({},function(err, data) {
-            if (err) {
-                if (typeof(res)==="undefined")
-                    return err;
-                else
-                    res.send(err);
-            }
-            if (typeof(res)==="undefined")
-                return data;
-            else
-                res.json(data);
-        });
-    },
-
-    getCourse : function(res, validCourseSchema, callNo) {
-        Course.find({callNo : callNo}, validCourseSchema,function(err, data) {
-            if (err) {
-                if (typeof(res)==="undefined")
-                    return err;
-                else
-                    res.send(err);
-            }
-            data = data[0];
-            if (typeof(res)==="undefined")
-                return data;
-            else
-                res.json(data);
-        });
-    },
-
-    updateCourse : function(res, updated, callNo) {
-        Course.update({callNo: callNo}, updated ,function(err, data) {
-            if (err) {
-                if (typeof(res)==="undefined")
-                    return err;
-                else
-                    res.send(err);
-            }
-            res.json(data);
-        });
-    },
-
-    removeCourse : function(res, callNo) {
-        Course.remove({callNo:req.params.callNo},function(err,data){
-            if (err) {
-                if (typeof(res)==="undefined")
-                    return err;
-                else
-                    res.send(err);
-            }
-            if (typeof(res)==="undefined")
-                return data;
-            else
-                res.json(data);
-        });
+        //Reusing the existing logic
+        this.getStudent(res,validStudentSchema,{});
     }
 };
