@@ -12,7 +12,6 @@ var validCourseSchema = {
   max : 1,
   currentEnroll : 1,
   enrolled : 1,
-  waitlisted  :   1,
   lastUpdated :   1
 };
 
@@ -37,108 +36,112 @@ function dropInvalidSchema(inputJson){
 
 module.exports = function(app) {
 //-----------------------------------------------
-       /**
- * @api {get} /api/getCourses Read all Courses
- * @apiVersion 0.3.0
- * @apiName GetCourses
- * @apiGroup Courses
- * @apiPermission admin
- *
- *
- * @apiSuccess {String}   name    Name of Course
- * @apiSuccess {String}   section Course Section
- * @apiSuccess {String}   callNo  Course Call Number
- * @apiSuccess {String}   instructor Name of Instructor
- * @apiSuccess {String}   year  Year
- * @apiSuccess {String}   semester Semester in which course is offered
- * @apiSuccess {String}   max Maximum number of students permitted
- * @apiSuccess {String}   currentenroll Number of students currently enrolled
-  * @apiSuccess {String[]} enrolled     List of Students enrolled
-  * @apiSuccess {String[]} waitlisted  List of Students Waitlisted
-  * @apiSuccess {Date}  lastupdated  Timestamp of Last Update
- */
+    /**
+    * @api {get} /api/getCourses Read all Courses
+    * @apiVersion 0.3.0
+    * @apiName GetCourses
+    * @apiGroup Courses
+    * @apiPermission admin
+    *
+    *
+    * @apiSuccess {String}   name    Name of Course
+    * @apiSuccess {String}   section Course Section
+    * @apiSuccess {String}   callNo  Course Call Number
+    * @apiSuccess {String}   instructor Name of Instructor
+    * @apiSuccess {String}   year  Year
+    * @apiSuccess {String}   semester Semester in which course is offered
+    * @apiSuccess {String}   max Maximum number of students permitted
+    * @apiSuccess {String}   currentenroll Number of students currently enrolled
+    * @apiSuccess {String[]} enrolled     List of Students enrolled
+    * @apiSuccess {String[]} waitlisted  List of Students Waitlisted
+    * @apiSuccess {Date}  lastupdated  Timestamp of Last Update
+    */
+    
     //CRUD for Courses
     app.get('/api/getCourses', function(req, res) {
         courseLogic.getAllCourses(res, validCourseSchema);
     });
-   /**
- * @api {get} api/getCourses/:callNo Read data of a particular course
- * @apiVersion 0.3.0
- * @apiName GetCourse
- * @apiGroup Courses
- * @apiPermission admin
- *
- *
- * @apiParam {String} callNo Call Number of the course
- *
+    
+    /**
+    * @api {get} api/getCourses/:callNo Read data of a particular course
+    * @apiVersion 0.3.0
+    * @apiName GetCourse
+    * @apiGroup Courses
+    * @apiPermission admin
+    *
+    *
+    * @apiParam {String} callNo Call Number of the course
+    *
 
- * @apiSuccess {String}   name    Name of Course
- * @apiSuccess {String}   section Course Section
- * @apiSuccess {String}   callNo  Course Call Number
- * @apiSuccess {String}   instructor Name of Instructor
- * @apiSuccess {String}   year  Year
- * @apiSuccess {String}   semester Semester in which course is offered
- * @apiSuccess {String}   max Maximum number of students permitted
- * @apiSuccess {String}   currentenroll Number of students currently enrolled
-  * @apiSuccess {String[]} enrolled     List of Students enrolled
-  * @apiSuccess {String[]} waitlisted  List of Students Waitlisted
-  * @apiSuccess {Date}  lastupdated  Timestamp of Last Update
+    * @apiSuccess {String}   name    Name of Course
+    * @apiSuccess {String}   section Course Section
+    * @apiSuccess {String}   callNo  Course Call Number
+    * @apiSuccess {String}   instructor Name of Instructor
+    * @apiSuccess {String}   year  Year
+    * @apiSuccess {String}   semester Semester in which course is offered
+    * @apiSuccess {String}   max Maximum number of students permitted
+    * @apiSuccess {String}   currentenroll Number of students currently enrolled
+    * @apiSuccess {String[]} enrolled     List of Students enrolled
+    * @apiSuccess {String[]} waitlisted  List of Students Waitlisted
+    * @apiSuccess {Date}  lastupdated  Timestamp of Last Update
 
- * @apiError CourseNotFound   The <code>callNo</code> of the Course was not found.
- *
- * @apiErrorExample Response (example):
- *     HTTP/1.1 401 No Course
- *     {
- *       "error": "Course does not exist"
- *     }
- */
+    * @apiError CourseNotFound   The <code>callNo</code> of the Course was not found.
+    *
+    * @apiErrorExample Response (example):
+    *     HTTP/1.1 401 No Course
+    *     {
+    *       "error": "Course does not exist"
+    *     }
+    */
     app.get('/api/getCourses/:callNo', function(req, res) {
         courseLogic.getCourse(res, validCourseSchema, req.params.callNo);
     });
+    
     /**
- * @api {post} /api/createCourse Create a new Course
- * @apiVersion 0.3.0
- * @apiName PostCourse
- * @apiGroup Courses
- * @apiPermission none
- *
- * @apiSuccess {String}   name    Name of Course
- * @apiSuccess {String}   section Course Section
- * @apiSuccess {String}   callNo  Course Call Number
- * @apiSuccess {String}   instructor Name of Instructor
- * @apiSuccess {String}   year  Year
- * @apiSuccess {String}   semester Semester in which course is offered
- * @apiSuccess {String}   max Maximum number of students permitted
- * @apiSuccess {String}   currentenroll Number of students currently enrolled
-  * @apiSuccess {String[]} enrolled     List of Students enrolled
-  * @apiSuccess {String[]} waitlisted  List of Students Waitlisted
-  * @apiSuccess {Date}  lastupdated  Timestamp of Last Update
- *
-  */
+     * @api {post} /api/createCourse Create a new Course
+     * @apiVersion 0.3.0
+     * @apiName PostCourse
+     * @apiGroup Courses
+     * @apiPermission none
+     *
+     * @apiSuccess {String}   name    Name of Course
+     * @apiSuccess {String}   section Course Section
+     * @apiSuccess {String}   callNo  Course Call Number
+     * @apiSuccess {String}   instructor Name of Instructor
+     * @apiSuccess {String}   year  Year
+     * @apiSuccess {String}   semester Semester in which course is offered
+     * @apiSuccess {String}   max Maximum number of students permitted
+     * @apiSuccess {String}   currentenroll Number of students currently enrolled
+     * @apiSuccess {String[]} enrolled     List of Students enrolled
+     * @apiSuccess {String[]} waitlisted  List of Students Waitlisted
+     * @apiSuccess {Date}  lastupdated  Timestamp of Last Update
+     *
+    */
 
     app.post('/api/createCourse', function(req, res) {
         var newCourse=dropInvalidSchema(req.body);
         newCourse['lastUpdated']=new Date();
         courseLogic.createCourse(res, newCourse)
     });
-/**
- * @api {put} /api/updateCourse/:callNo Change a Course
- * @apiVersion 0.3.0
- * @apiName PutCourse
- * @apiGroup Courses
- * @apiPermission none
- *
- * @apiParam {String} callNo Call number of the course
- *
+    
+    /**
+     * @api {put} /api/updateCourse/:callNo Change a Course
+     * @apiVersion 0.3.0
+     * @apiName PutCourse
+     * @apiGroup Courses
+     * @apiPermission none
+     *
+     * @apiParam {String} callNo Call number of the course
+     *
 
- * @apiError CourseNotFound   The <code>callNo</code> of the Course was not found.
- *
- * @apiErrorExample Response (example):
- *     HTTP/1.1 401 No Course
- *     {
- *       "error": "Course does not exist"
- *     }
- */
+     * @apiError CourseNotFound   The <code>callNo</code> of the Course was not found.
+     *
+     * @apiErrorExample Response (example):
+     *     HTTP/1.1 401 No Course
+     *     {
+     *       "error": "Course does not exist"
+     *     }
+     */
     app.put('/api/updateCourse/:callNo', function(req, res) {
         console.log(req.body);
         var updated=req.body.updatedData;
@@ -147,23 +150,24 @@ module.exports = function(app) {
         
         courseLogic.updateCourse(res,{$set:updated},req.params.callNo);
     });
-/**
- * @api {delete} /api/deleteCourse/:callNo Delete a Course
- * @apiVersion 0.3.0
- * @apiName DeleteCourse
- * @apiGroup Courses
- * @apiPermission none
- *
- * @apiParam {String} callNo Call number of the course
- * @apiError CourseNotFound   The <code>callNo</code> of the Course was not found.
- *
- * @apiErrorExample Response (example):
- *     HTTP/1.1 401 No Course
- *     {
- *       "error": "Course does not exist"
- *     }
+    
+    /**
+     * @api {delete} /api/deleteCourse/:callNo Delete a Course
+     * @apiVersion 0.3.0
+     * @apiName DeleteCourse
+     * @apiGroup Courses
+     * @apiPermission none
+     *
+     * @apiParam {String} callNo Call number of the course
+     * @apiError CourseNotFound   The <code>callNo</code> of the Course was not found.
+     *
+     * @apiErrorExample Response (example):
+     *     HTTP/1.1 401 No Course
+     *     {
+     *       "error": "Course does not exist"
+     *     }
 
- */
+     */
     app.delete('/api/deleteCourse/:callNo', function(req, res) {
 
       console.log(req.body);
@@ -172,210 +176,88 @@ module.exports = function(app) {
 
     });
 
-/**
- * @api {put} /api/enroll/:callNo/:uni Waitlist a student in a course
- * @apiVersion 0.3.0
- * @apiName PutEnroll
- * @apiGroup Courses
- * @apiPermission none
- *
- * @apiParam {String} callNo Call number of the course
- * @apiParam {String} uni   UNI of the student
- *
- * @apiError CourseNotFound   The <code>callNo</code> of the Course was not found.
- *
- * @apiErrorExample Response (example):
- *     HTTP/1.1 401 No Course
- *     {
- *       "error": "Course does not exist"
- *     }
+    /**
+     * @api {put} /api/enroll/:callNo/:uni Waitlist a student in a course
+     * @apiVersion 0.3.0
+     * @apiName PutEnroll
+     * @apiGroup Courses
+     * @apiPermission none
+     *
+     * @apiParam {String} callNo Call number of the course
+     * @apiParam {String} uni   UNI of the student
+     *
+     * @apiError CourseNotFound   The <code>callNo</code> of the Course was not found.
+     *
+     * @apiErrorExample Response (example):
+     *     HTTP/1.1 401 No Course
+     *     {
+     *       "error": "Course does not exist"
+     *     }
 
- */
+     */
     app.put('/api/enroll/:callNo/:uni', function(req,res){
         console.log(req.body);
         var updated = {$set:{'lastUpdated':new Date()},$push:{'enrolled':req.params.uni}};
         courseLogic.updateCourse(res,updated,req.params.callNo);
     });
 
-/**
- * @api {put} /api/waitlist/:callNo/:uni Waitlist a student in a course
- * @apiVersion 0.3.0
- * @apiName PutWaitlist
- * @apiGroup Courses
- * @apiPermission none
- *
- * @apiParam {String} callNo Call number of the course
- * @apiParam {String} uni   UNI of the student
- *
- * @apiError CourseNotFound   The <code>callNo</code> of the Course was not found.
- *
- * @apiErrorExample Response (example):
- *     HTTP/1.1 401 No Course
- *     {
- *       "error": "Course does not exist"
- *     }
- */
-    app.put('/api/waitlist/:callNo/:uni', function(req,res){
-        console.log(req.body);
-        var waitListUpdate = {$set:{'lastUpdated':new Date()},$push:{'waitlisted':req.params.uni}};
-        courseLogic.updateCourse(res,waitListUpdate,req.params.callNo);
-    });
-/**
- * @api {delete} /api/dropEnroll/:callNo Remove students enrolled from a course
- * @apiVersion 0.3.0
- * @apiName DeleteEnroll
- * @apiGroup Courses
- * @apiPermission none
- *
- * @apiParam {String} callNo Call number of the course
- *
- * @apiError CourseNotFound   The <code>callNo</code> of the Course was not found.
- *
- * @apiErrorExample Response (example):
- *     HTTP/1.1 401 No Course
- *     {
- *       "error": "Course does not exist"
- *     }
- */
-    app.delete('/api/dropEnroll/:callNo', function(req, res) {
-
-      var students = req.body.students;
-
-      console.log(req.body);
-        
-      Course.update({callNo:req.params.callNo},{$set:{'lastUpdated':new Date()},$pull:{'enrolled':{$in : students }}},function(err,removed){
-          if(err) res.send(err);
-
-          for (var i = 0; i < students.length; i++)
-          {
-
-
-            Log.create({uni:students[i],changes:"dropped",callNo:req.params.callNo,updatedAt: new Date()});
-          }
-
-          res.json(removed);
-
-      });
-
-
-    });
-
-
-/**
-
-API for slective delete
-
-
-
-*/
-
-app.put('/api/unenroll/:callNo/:uni', function(req, res) {
-
-  var students = req.body.students;
-
-  console.log(req.body);
-
-  Course.update({callNo:req.params.callNo},{$set:{'lastUpdated':new Date()},$pull:{'enrolled':req.params.uni}},function(err,removed){
-      if(err) res.send(err);
-
-
-
-        Log.create({uni:req.params.uni,changes:"dropped",callNo:req.params.callNo,updatedAt: new Date()});
-
-
-      res.json(removed);
-
-  });
-
-
-});
-
-
-
-app.put('/api/unwaitlist/:callNo/:uni', function(req, res) {
-
-  Course.update({callNo:req.params.callNo},{$set:{'lastUpdated':new Date()},$pull:{'waitlisted':req.params.uni}},function(err,removed){
-      if(err) res.send(err);
-
-
-        Log.create({uni:req.params.uni,changes:"unwaitlisted",callNo:req.params.callNo,updatedAt: new Date()});
-
-
-
-
-
-      res.json(removed);
-
-  });
-
-
-});
-
-/**
- * @api {delete} /api/dropWaitlist/:callNo Drop from waitlist one or more students
- * @apiVersion 0.3.0
- * @apiName DeleteWaitlist
- * @apiGroup Courses
- * @apiPermission none
- *
- * @apiParam {String} callNo Call number of the course
- *
- * @apiError CourseNotFound   The <code>callNo</code> of the Course was not found.
- *
- * @apiErrorExample Response (example):
- *     HTTP/1.1 401 No Course
- *     {
- *       "error": "Course does not exist"
- *     }
- */
-    app.delete('/api/dropWaitlist/:callNo', function(req, res) {
-
-      var students = req.body.students;
-
-      console.log(req.body);
-
-      Course.update({callNo:req.params.callNo},{$set:{'lastUpdated':new Date()},$pull:{'waitlisted':{$in : students }}},function(err,removed){
-          if(err) res.send(err);
-
-          for (var i = 0; i < students.length; i++)
-          {
-
-            Log.create({uni:students[i],changes:"dropWaitlisted",callNo:req.params.callNo,updatedAt: new Date()});
-
-          }
-
-
-
-          res.json(removed);
-
-      });
-
-
-    });
-
-//-------------------- API for LOGS --------------------------
-app.get('/api/logs/:time', function(req,res) {
-    Log.find({}, function(err, data) {
-        if (err) res.send(err);
-        res.json(data);
-    });
-});
-
-//---------------------ADMIN APIs---------------------
-
-//--------------------DataModel Changes API---------------------
     /**
- * @api {post} /api/admin/Courseschema Effect Data Model changes
- * @apiVersion 0.3.0
- * @apiName PostDrop
- * @apiGroup Admin
- * @apiPermission Admin
- *
- * @apiSuccess 200
+    * @api {delete} /api/dropEnroll/:callNo Remove students enrolled from a course
+    * @apiVersion 0.3.0
+    * @apiName DeleteEnroll
+    * @apiGroup Courses
+    * @apiPermission none
+    *
+    * @apiParam {String} callNo Call number of the course
+    *
+    * @apiError CourseNotFound   The <code>callNo</code> of the Course was not found.
+    *
+    * @apiErrorExample Response (example):
+    *     HTTP/1.1 401 No Course
+    *     {
+    *       "error": "Course does not exist"
+    *     }
+    */
+    app.delete('/api/dropEnroll/:callNo', function(req, res) {
+        //UnEnroll Multiple students at a time
+        var students = req.body.students;
+        var updateData = {$set:{'lastUpdated':new Date()},$pull:{'enrolled':{$in : students }}};
+        
+        courseLogic.updateCourse(res, updateData, req.params.callNo);
 
- *
+    });
 
- */
+    /**
+    API for slective delete
+    */
+
+    app.put('/api/unenroll/:callNo/:uni', function(req, res) {
+        var updateData = {$set:{'lastUpdated':new Date()},$pull:{'enrolled':req.params.uni}};
+
+        courseLogic.updateCourse(res, updateData, req.params.callNo);
+    });
+
+    //-------------------- API for LOGS --------------------------
+    app.get('/api/logs/:time', function(req,res) {
+        Log.find({}, function(err, data) {
+            if (err) res.send(err);
+            res.json(data);
+        });
+    });
+
+    //---------------------ADMIN APIs---------------------
+
+    //--------------------DataModel Changes API---------------------
+    /**
+    * @api {post} /api/admin/Courseschema Effect Data Model changes
+    * @apiVersion 0.3.0
+    * @apiName PostDrop
+    * @apiGroup Admin
+    * @apiPermission Admin
+    *
+    * @apiSuccess 200
+    *
+    */
     app.post('/api/admin/Courseschema',function(req,res){
 
       validCourseSchema = req.body.newSchema;
