@@ -51,7 +51,7 @@ module.exports = function(app) {
 
     });
     /**
- * @api {get} api/getStudent/:uni Read data of a student
+ * @api {get} /api/student/:uni Read data of a student
  * @apiVersion 0.3.0
  * @apiName GetStudent
  * @apiGroup Student
@@ -82,7 +82,7 @@ module.exports = function(app) {
         });
     });
 /**
- * @api {post} /api/createStudent/:uni Create a new Student
+ * @api {post} /api/student Create a new Student
  * @apiVersion 0.3.0
  * @apiName PostStudent
  * @apiGroup Student
@@ -109,7 +109,7 @@ module.exports = function(app) {
         });
     });
 /**
- * @api {put} /api/updateStudent/:uni Change a Student
+ * @api {put} /api/student/:uni Change a Student
  * @apiVersion 0.3.0
  * @apiName PutStudent
  * @apiGroup Student
@@ -135,7 +135,7 @@ module.exports = function(app) {
         });
     });
 /**
- * @api {delete} /api/deleteStudent/:uni Delete a student
+ * @api {delete} /api/student/:uni Delete a student
  * @apiVersion 0.3.0
  * @apiName DeleteStudent
  * @apiGroup Student
@@ -192,7 +192,7 @@ var str= JSON.parse(JSON.stringify(data1), function(k, v) {
 
     //----------------------------Course Enrollment--------------------------------------
 /**
- * @api {put} /api/enroll/:uni Enroll a student in Course/Group of course
+ * @api {put} /api/student/:uni/course Enroll a student in Course/Group of course
  * @apiVersion 0.3.0
  * @apiName PutEnroll
  * @apiGroup Student
@@ -238,7 +238,7 @@ var str= JSON.parse(JSON.stringify(data1), function(k, v) {
         });
     });
 /**
- * @api {put} /api/dropcourse/:uni Un-Enroll from one or many courses
+ * @api {delete} /api/student/:uni/course Un-Enroll from one or many courses
  * @apiVersion 0.3.0
  * @apiName PutDrop
  * @apiGroup Student
@@ -285,7 +285,7 @@ var str= JSON.parse(JSON.stringify(data1), function(k, v) {
 
     //----------------------------DataModel Changes API----------------------------
     /**
- * @api {post} /api/admin/schema Effect Data Model changes
+ * @api {post} /api/admin/student Effect Data Model changes
  * @apiVersion 0.3.0
  * @apiName PutDrop
  * @apiGroup Admin
