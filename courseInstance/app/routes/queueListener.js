@@ -2,8 +2,11 @@ var amqp = require('amqplib');
 var basename = require('path').basename;
 var all = require('when').all;
 
-var keys=["enroll","waitlist","unenroll","unwaitlist"];
+var keys=["enroll","unenroll"];
     
+var courseLogic  = require('./../logic/courseFunctionality');
+
+
 amqp.connect('amqp://localhost').then(function(conn) {
   process.once('SIGINT', function() { conn.close(); });
   return conn.createChannel().then(function(ch) {
@@ -29,9 +32,22 @@ amqp.connect('amqp://localhost').then(function(conn) {
     });
     
     function logMessage(msg) {
-      console.log(" [x] %s:'%s'",
-                  msg.fields.routingKey,
-                  msg.content.toString());
+        
+        data = JSON.parse(msg.content.toString());
+        if (msg.fields.routingKey == "enroll") {
+            console.log('Enrolling the Student '+ data.uni + ' in courses ' +data.callNo);
+            for ( var i in data.callNo) {
+                var updated = {$set:{'lastUpdated':new Date()},$push:{'enrolled':data.uni}};
+                courseLogic.updateCourse(undefined,updated,data.callNo[i]);
+            }
+        }
+        else if (msg.fields.routingKey == "unenroll") {
+            console.log('Un-Enrolling the Student '+ data.uni + ' in courses ' +data.callNo);
+            for ( var i in data.callNo) {
+                var updateData = {$set:{'lastUpdated':new Date()},$pull:{'enrolled':data.uni}};
+                courseLogic.updateCourse(undefined,updated,data.callNo[i]);
+            }
+        }
     }
   });
 }).then(null, console.warn);

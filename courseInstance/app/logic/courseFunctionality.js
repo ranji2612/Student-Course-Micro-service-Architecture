@@ -6,8 +6,16 @@ var Log = require('./../models/log');
 module.exports =  {
     createCourse  : function(res, data) {
         Course.create(newCourse,function(err, data) {
-            if (err) res.send(err);
-            res.json(data);
+            if (err) {
+                if (typeof(res)==="undefined")
+                    return err;
+                else
+                    res.send(err);
+            }
+            if (typeof(res)==="undefined")
+                return data;
+            else
+                res.json(data);
         });
     },
     
@@ -35,7 +43,10 @@ module.exports =  {
                 else
                     res.send(err);
             }
-            res.json(data);
+            if (typeof(res)==="undefined")
+                return data;
+            else
+                res.json(data);
         });
     },
     
