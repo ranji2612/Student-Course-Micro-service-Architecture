@@ -99,7 +99,7 @@ module.exports = function(app) {
 
  *
   */
-    app.post('/api/student/:uni', function(req, res) {
+    app.post('/api/student', function(req, res) {
         var newStudent = dropInvalidSchema(req.body);
         newStudent['lastUpdated'] = new Date();
 
@@ -294,7 +294,7 @@ var str= JSON.parse(JSON.stringify(data1), function(k, v) {
  * @apiSuccess 200
  *
  */
-    app.post('/api/admin/student/schema', function(req,res) {
+    app.post('/api/admin/student', function(req,res) {
         validStudentSchema = req.body.newSchema;
         res.send(200);
     });

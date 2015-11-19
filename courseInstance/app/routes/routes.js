@@ -53,15 +53,15 @@ module.exports = function(app) {
     * @apiSuccess {String}   max Maximum number of students permitted
     * @apiSuccess {String}   currentenroll Number of students currently enrolled
     * @apiSuccess {String[]} enrolled     List of Students enrolled
-    * @apiSuccess {String[]} waitlisted  List of Students Waitlisted
+
     * @apiSuccess {Date}  lastupdated  Timestamp of Last Update
     */
-    
+
     //CRUD for Courses
-    app.get('/api/getCourses', function(req, res) {
+    app.get('/api/course', function(req, res) {
         courseLogic.getAllCourses(res, validCourseSchema);
     });
-    
+
     /**
     * @api {get} api/getCourses/:callNo Read data of a particular course
     * @apiVersion 0.3.0
@@ -82,7 +82,7 @@ module.exports = function(app) {
     * @apiSuccess {String}   max Maximum number of students permitted
     * @apiSuccess {String}   currentenroll Number of students currently enrolled
     * @apiSuccess {String[]} enrolled     List of Students enrolled
-    * @apiSuccess {String[]} waitlisted  List of Students Waitlisted
+
     * @apiSuccess {Date}  lastupdated  Timestamp of Last Update
 
     * @apiError CourseNotFound   The <code>callNo</code> of the Course was not found.
@@ -93,10 +93,10 @@ module.exports = function(app) {
     *       "error": "Course does not exist"
     *     }
     */
-    app.get('/api/getCourses/:callNo', function(req, res) {
+    app.get('/api/course/:callno', function(req, res) {
         courseLogic.getCourse(res, validCourseSchema, req.params.callNo);
     });
-    
+
     /**
      * @api {post} /api/createCourse Create a new Course
      * @apiVersion 0.3.0
@@ -113,17 +113,17 @@ module.exports = function(app) {
      * @apiSuccess {String}   max Maximum number of students permitted
      * @apiSuccess {String}   currentenroll Number of students currently enrolled
      * @apiSuccess {String[]} enrolled     List of Students enrolled
-     * @apiSuccess {String[]} waitlisted  List of Students Waitlisted
+
      * @apiSuccess {Date}  lastupdated  Timestamp of Last Update
      *
     */
 
-    app.post('/api/createCourse', function(req, res) {
+    app.post('/api/course', function(req, res) {
         var newCourse=dropInvalidSchema(req.body);
         newCourse['lastUpdated']=new Date();
         courseLogic.createCourse(res, newCourse)
     });
-    
+
     /**
      * @api {put} /api/updateCourse/:callNo Change a Course
      * @apiVersion 0.3.0
@@ -142,15 +142,15 @@ module.exports = function(app) {
      *       "error": "Course does not exist"
      *     }
      */
-    app.put('/api/updateCourse/:callNo', function(req, res) {
+    app.put('/api/course/:callNo', function(req, res) {
         console.log(req.body);
         var updated=req.body.updatedData;
         var newdate=new Date();
         updated['lastUpdated']=newdate;
-        
+
         courseLogic.updateCourse(res,{$set:updated},req.params.callNo);
     });
-    
+
     /**
      * @api {delete} /api/deleteCourse/:callNo Delete a Course
      * @apiVersion 0.3.0
@@ -168,7 +168,7 @@ module.exports = function(app) {
      *     }
 
      */
-    app.delete('/api/deleteCourse/:callNo', function(req, res) {
+    app.delete('/api/course/:callNo', function(req, res) {
 
       console.log(req.body);
       courseLogic.removeCourse(res, req.params.callNo);
@@ -177,7 +177,7 @@ module.exports = function(app) {
     });
 
     /**
-     * @api {put} /api/enroll/:callNo/:uni Waitlist a student in a course
+     * @api {put} /api/enroll/:callNo/:uni Enroll a student in a course
      * @apiVersion 0.3.0
      * @apiName PutEnroll
      * @apiGroup Courses
@@ -195,7 +195,7 @@ module.exports = function(app) {
      *     }
 
      */
-    app.put('/api/enroll/:callNo/:uni', function(req,res){
+    app.put('/api/course/:callNo/student/:uni', function(req,res){
         console.log(req.body);
         var updated = {$set:{'lastUpdated':new Date()},$push:{'enrolled':req.params.uni}};
         courseLogic.updateCourse(res,updated,req.params.callNo);
@@ -218,11 +218,11 @@ module.exports = function(app) {
     *       "error": "Course does not exist"
     *     }
     */
-    app.delete('/api/dropEnroll/:callNo', function(req, res) {
+    app.delete('/api/course/:callNo/student', function(req, res) {
         //UnEnroll Multiple students at a time
         var students = req.body.students;
         var updateData = {$set:{'lastUpdated':new Date()},$pull:{'enrolled':{$in : students }}};
-        
+
         courseLogic.updateCourse(res, updateData, req.params.callNo);
 
     });
@@ -231,14 +231,14 @@ module.exports = function(app) {
     API for slective delete
     */
 
-    app.put('/api/unenroll/:callNo/:uni', function(req, res) {
+    app.delete('/api/course/:callNo/student/:uni', function(req, res) {
         var updateData = {$set:{'lastUpdated':new Date()},$pull:{'enrolled':req.params.uni}};
 
         courseLogic.updateCourse(res, updateData, req.params.callNo);
     });
 
     //-------------------- API for LOGS --------------------------
-    app.get('/api/logs/:time', function(req,res) {
+    app.get('/api/course/log/:time', function(req,res) {
         Log.find({}, function(err, data) {
             if (err) res.send(err);
             res.json(data);
@@ -258,7 +258,7 @@ module.exports = function(app) {
     * @apiSuccess 200
     *
     */
-    app.post('/api/admin/Courseschema',function(req,res){
+    app.post('/api/admin/course',function(req,res){
 
       validCourseSchema = req.body.newSchema;
       res.send(200);
