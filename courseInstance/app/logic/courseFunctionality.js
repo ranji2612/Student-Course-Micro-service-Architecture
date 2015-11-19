@@ -4,7 +4,7 @@ var Log = require('./../models/log');
 // Has all the business Logic.
 
 module.exports =  {
-    createCourse  : function(res, data) {
+    createCourse  : function(res, newCourse) {
         Course.create(newCourse,function(err, data) {
             if (err) {
                 if (typeof(res)==="undefined")

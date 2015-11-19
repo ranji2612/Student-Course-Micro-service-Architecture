@@ -16,6 +16,9 @@ var validCourseSchema = {
 };
 
 var courseLogic  = require('./../logic/courseFunctionality');
+var messagingQueue = require('./queuePushMessage');
+
+//--- For schema change and validation
 var validLogSchema = {
 
   uni : 1,
@@ -169,11 +172,11 @@ module.exports = function(app) {
 
      */
     app.delete('/api/course/:callNo', function(req, res) {
-
-      console.log(req.body);
-      courseLogic.removeCourse(res, req.params.callNo);
-
-
+        courseLogic.removeCourse(res, req.params.callNo);
+        
+        //Course is deleted So push to queue to take care of ref integ
+        // {'enrolled':{$in:['sr']}},{$pull:{"enrolled":"sr"}},{'multi':true}
+        messagingQueue.pushToQueue("courseDrop",{callNo:req.params.callNo});
     });
 
     /**
@@ -224,7 +227,8 @@ module.exports = function(app) {
         var updateData = {$set:{'lastUpdated':new Date()},$pull:{'enrolled':{$in : students }}};
 
         courseLogic.updateCourse(res, updateData, req.params.callNo);
-
+        //Pushing to Queue
+        messagingQueue.pushToQueue("unenroll")
     });
 
     /**
