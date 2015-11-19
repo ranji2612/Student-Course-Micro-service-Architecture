@@ -16,6 +16,7 @@ var validCourseSchema = {
   lastUpdated :   1
 };
 
+var courseLogic  = require('./../logic/courseFunctionality');
 var validLogSchema = {
 
   uni : 1,
@@ -58,11 +59,7 @@ module.exports = function(app) {
  */
     //CRUD for Courses
     app.get('/api/getCourses', function(req, res) {
-        Course.find({}, validCourseSchema,function(err, data) {
-            if (err) res.send(err);
-
-            res.json(data);
-        });
+        courseLogic.getAllCourses(res, validCourseSchema);
     });
    /**
  * @api {get} api/getCourses/:callNo Read data of a particular course
@@ -96,10 +93,7 @@ module.exports = function(app) {
  *     }
  */
     app.get('/api/getCourses/:callNo', function(req, res) {
-        Course.find({callNo : req.params.callNo}, validCourseSchema,function(err, data) {
-            if (err) res.send(err);
-            res.json(data);
-        });
+        courseLogic.getCourse(res, validCourseSchema, req.params.callNo);
     });
     /**
  * @api {post} /api/createCourse Create a new Course
@@ -123,15 +117,9 @@ module.exports = function(app) {
   */
 
     app.post('/api/createCourse', function(req, res) {
-        console.log(req.body);
-
         var newCourse=dropInvalidSchema(req.body);
         newCourse['lastUpdated']=new Date();
-
-        Course.create(newCourse,function(err, data) {
-            if (err) res.send(err);
-            res.json(data);
-        });
+        courseLogic.createCourse(res, newCourse)
     });
 /**
  * @api {put} /api/updateCourse/:callNo Change a Course
@@ -152,18 +140,12 @@ module.exports = function(app) {
  *     }
  */
     app.put('/api/updateCourse/:callNo', function(req, res) {
-      console.log(req.body);
-      var updated=req.body.updatedData;
-      var newdate=new Date();
-      updated['lastUpdated']=newdate;
-      Course.update({callNo: req.params.callNo}, {$set: updated} ,function(err, data2) {
-          if(err) res.send(err);
-
-
-          res.json(data2);
-        });
-
-
+        console.log(req.body);
+        var updated=req.body.updatedData;
+        var newdate=new Date();
+        updated['lastUpdated']=newdate;
+        
+        courseLogic.updateCourse(res,{$set:updated},req.params.callNo);
     });
 /**
  * @api {delete} /api/deleteCourse/:callNo Delete a Course
@@ -185,13 +167,7 @@ module.exports = function(app) {
     app.delete('/api/deleteCourse/:callNo', function(req, res) {
 
       console.log(req.body);
-
-      Course.remove({callNo:req.params.callNo},function(err,removed){
-          if(err) res.send(err);
-
-          res.json(removed);
-
-      });
+      courseLogic.removeCourse(res, req.params.callNo);
 
 
     });
@@ -216,27 +192,9 @@ module.exports = function(app) {
 
  */
     app.put('/api/enroll/:callNo/:uni', function(req,res){
-      console.log(req.body);
-
-
-        Course.update({callNo:req.params.callNo},{$set:{'lastUpdated':new Date()},$push:{'enrolled':req.params.uni}},function(err,data){
-
-                if(err) res.send(err);
-
-
-
-
-                  Log.create({uni:req.params.uni,changes:"enrolled",callNo:req.params.callNo,updatedAt: new Date()});
-
-                res.json(data);
-
-        });
-
-
-
-
-
-
+        console.log(req.body);
+        var updated = {$set:{'lastUpdated':new Date()},$push:{'enrolled':req.params.uni}};
+        courseLogic.updateCourse(res,updated,req.params.callNo);
     });
 
 /**
@@ -258,14 +216,9 @@ module.exports = function(app) {
  *     }
  */
     app.put('/api/waitlist/:callNo/:uni', function(req,res){
-      console.log(req.body);
-        Course.update({callNo:req.params.callNo},{$set:{'lastUpdated':new Date()},$push:{'waitlisted':req.params.uni}},function(err,data){
-
-                if(err) res.send(err);
-
-                Log.create({uni:req.params.uni,changes:"waitlisted",callNo:req.params.callNo,updatedAt: new Date()});
-                res.json(data);
-        });
+        console.log(req.body);
+        var waitListUpdate = {$set:{'lastUpdated':new Date()},$push:{'waitlisted':req.params.uni}};
+        courseLogic.updateCourse(res,waitListUpdate,req.params.callNo);
     });
 /**
  * @api {delete} /api/dropEnroll/:callNo Remove students enrolled from a course
@@ -289,7 +242,7 @@ module.exports = function(app) {
       var students = req.body.students;
 
       console.log(req.body);
-
+        
       Course.update({callNo:req.params.callNo},{$set:{'lastUpdated':new Date()},$pull:{'enrolled':{$in : students }}},function(err,removed){
           if(err) res.send(err);
 
