@@ -42,10 +42,10 @@ module.exports = function(app) {
  */
     app.get('/api/student', function(req, res) {
 
-        // Student.find({},validStudentSchema, function(err, data) {
-        //     if (err) res.send(err);
-        //     res.json(data);
-        // });
+        //  Student.find({},validStudentSchema, function(err, data) {
+        //      if (err) res.send(err);
+        //      res.json(data);
+        //  });
         studentLogic.getAllStudents(res, validStudentSchema);
 
 
@@ -161,41 +161,45 @@ module.exports = function(app) {
  */
     app.delete('/api/student/:uni', function(req, res) {
 
-      Student.findOne({uni:req.params.uni},function(er,data1){
-//console.log(data1);
-var str= JSON.parse(JSON.stringify(data1), function(k, v) {
-  //console.log(v); // log the current property name, the last is "".
-  return v;       // return the unchanged property value.
-});
-          //console.log("Enrolled:"+str["enrolled"]);
 
-          var enrolled_courses=" ";
-          if(str["enrolled"])
-          enrolled_courses = str["enrolled"];
-                    console.log("Enrolled Courses:" + enrolled_courses);
+        studentLogic.removeStudent(res, req.params.uni);
 
-          if(enrolled_courses!=" ")
-          Log.create({uni:req.params.uni,changes:"unenroll",callNo:enrolled_courses});
-                            amqp.connect('amqp://localhost').then(function(conn) {
-                  return when(conn.createChannel().then(function(ch) {
-                  var ex = 'topic_logs';
-                  var ok = ch.assertExchange(ex, 'topic', {durable: false});
-                    return ok.then(function() {
-              if(enrolled_courses!=" "){
-                        var key="unenroll";
-              var message='{"uni":"'+req.params.uni+'","callNo":'+JSON.stringify(enrolled_courses)+'}';
-              ch.publish(ex, key, new Buffer(message));
-              console.log(" [x] Sent %s:'%s'", key, message);}
 
-              return ch.close();
-            });
-          })).ensure(function() { conn.close(); })
-        }).then(null, console.log);
-          Student.remove({uni:req.params.uni}, function(err,data) {
-            if(err) res.send(err);
-            res.json(data);
-        });
-} );
+//       Student.findOne({uni:req.params.uni},function(er,data1){
+// //console.log(data1);
+// var str= JSON.parse(JSON.stringify(data1), function(k, v) {
+//   //console.log(v); // log the current property name, the last is "".
+//   return v;       // return the unchanged property value.
+// });
+//           //console.log("Enrolled:"+str["enrolled"]);
+//
+//           var enrolled_courses=" ";
+//           if(str["enrolled"])
+//           enrolled_courses = str["enrolled"];
+//                     console.log("Enrolled Courses:" + enrolled_courses);
+//
+//           if(enrolled_courses!=" ")
+//           Log.create({uni:req.params.uni,changes:"unenroll",callNo:enrolled_courses});
+//                             amqp.connect('amqp://localhost').then(function(conn) {
+//                   return when(conn.createChannel().then(function(ch) {
+//                   var ex = 'topic_logs';
+//                   var ok = ch.assertExchange(ex, 'topic', {durable: false});
+//                     return ok.then(function() {
+//               if(enrolled_courses!=" "){
+//                         var key="unenroll";
+//               var message='{"uni":"'+req.params.uni+'","callNo":'+JSON.stringify(enrolled_courses)+'}';
+//               ch.publish(ex, key, new Buffer(message));
+//               console.log(" [x] Sent %s:'%s'", key, message);}
+//
+//               return ch.close();
+//             });
+//           })).ensure(function() { conn.close(); })
+//         }).then(null, console.log);
+//           Student.remove({uni:req.params.uni}, function(err,data) {
+//             if(err) res.send(err);
+//             res.json(data);
+//         });
+// } );
 
     });
 
@@ -218,34 +222,26 @@ var str= JSON.parse(JSON.stringify(data1), function(k, v) {
  */
     // Enroll in one / group of course
     app.put('/api/student/:uni/course', function(req, res) {
+
+
+
         var courses = req.body.courses;
-        Student.update({uni:req.params.uni},{$set:{'lastUpdated':new Date()},$pushAll : {'enrolled':courses}}, function(err, data) {
-            if(err) res.send(err);
-            if(courses)
-            {
-            Log.create({uni:req.params.uni,changes:"enroll",callNo:courses});
-             amqp.connect('amqp://localhost').then(function(conn) {
-                  return when(conn.createChannel().then(function(ch) {
-                  var ex = 'topic_logs';
-                  var ok = ch.assertExchange(ex, 'topic', {durable: false});
-                    return ok.then(function() {
-                    var key="enroll";
-                    var message='{"uni":"'+req.params.uni+'","callNo":'+JSON.stringify(courses)+'}';
-              ch.publish(ex, key, new Buffer(message));
-              console.log(" [x] Sent %s:'%s'", key, message);
-              return ch.close();
-            });
-          })).ensure(function() { conn.close(); })
-        }).then(null, console.log);
+
+        var updated = {$set:{'lastUpdated':new Date()},$pushAll : {'enrolled':courses}};
+        var message='{"uni":"'+req.params.uni+'","callNo":'+JSON.stringify(courses)+'}';
+        studentLogic.updateStudent(res,updated,req.params.uni,message,"enroll" );
 
 
 
 
 
-            }
-            res.json(data);
-        });
-    });
+      });
+
+
+            // }
+            // res.json(data);
+
+
 /**
  * @api {delete} /api/student/:uni/course Un-Enroll from one or many courses
  * @apiVersion 0.3.0
@@ -265,30 +261,41 @@ var str= JSON.parse(JSON.stringify(data1), function(k, v) {
  */
     //Un-enroll from one / more course
     app.delete('/api/student/:uni/course', function(req, res) {
-        var courses = req.body.courses;
-        if(courses)
-        {
-        Log.create({uni:req.params.uni,changes:"unenroll",callNo:courses});
-        amqp.connect('amqp://localhost').then(function(conn) {
-                  return when(conn.createChannel().then(function(ch) {
-                  var ex = 'topic_logs';
-                  var ok = ch.assertExchange(ex, 'topic', {durable: false});
-                    return ok.then(function() {
-                    var key="unenroll";
-                    var message='{"uni":"'+req.params.uni+'","callNo":'+JSON.stringify(courses)+'}';
-              ch.publish(ex, key, new Buffer(message));
-              console.log(" [x] Sent %s:'%s'", key, message);
-              return ch.close();
-            });
-          })).ensure(function() { conn.close(); })
-        }).then(null, console.log);
 
 
-        }
-        Student.update({uni:req.params.uni},{$set:{'lastUpdated':new Date()},$pull : {'enrolled': { $in : courses}}}, function(err, data) {
-            if(err) res.send(err);
-            res.json(data);
-        });
+
+      var courses = req.body.courses;
+
+      var updated = {$set:{'lastUpdated':new Date()},$pull : {'enrolled': { $in : courses}}}; 
+      var message='{"uni":"'+req.params.uni+'","callNo":'+JSON.stringify(courses)+'}';
+      studentLogic.updateStudent(res,updated,req.params.uni,message,"unenroll" );
+
+
+
+        // var courses = req.body.courses;
+        // if(courses)
+        // {
+        // Log.create({uni:req.params.uni,changes:"unenroll",callNo:courses});
+        // amqp.connect('amqp://localhost').then(function(conn) {
+        //           return when(conn.createChannel().then(function(ch) {
+        //           var ex = 'topic_logs';
+        //           var ok = ch.assertExchange(ex, 'topic', {durable: false});
+        //             return ok.then(function() {
+        //             var key="unenroll";
+        //             var message='{"uni":"'+req.params.uni+'","callNo":'+JSON.stringify(courses)+'}';
+        //       ch.publish(ex, key, new Buffer(message));
+        //       console.log(" [x] Sent %s:'%s'", key, message);
+        //       return ch.close();
+        //     });
+        //   })).ensure(function() { conn.close(); })
+        // }).then(null, console.log);
+        //
+        //
+        // }
+        // Student.update({uni:req.params.uni},{$set:{'lastUpdated':new Date()},$pull : {'enrolled': { $in : courses}}}, function(err, data) {
+        //     if(err) res.send(err);
+        //     res.json(data);
+        // });
     });
     //---------------------------- ADMIN APIs ----------------------------
 
