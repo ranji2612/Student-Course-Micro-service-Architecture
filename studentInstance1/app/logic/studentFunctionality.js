@@ -4,7 +4,19 @@ var Log = require('./../models/log');
 // Has all the business Logic.
 
 module.exports =  {
-    createStudent  : function(res, data) {
+    createStudent  : function(res, newStudent) {
+      Student.create(newStudent,function(err, data) {
+          if (err) {
+              if (typeof(res)==="undefined")
+                  return err;
+              else
+                  res.send(err);
+          }
+          if (typeof(res)==="undefined")
+              return data;
+          else
+              res.json(data);
+      });
     },
 
     getStudent : function(res, validStudentSchema, searchCondition) {
@@ -41,7 +53,7 @@ module.exports =  {
 
     removeStudent : function() {
     },
-    
+
     getAllStudents : function(res, validStudentSchema) {
         //Reusing the existing logic
         this.getStudent(res,validStudentSchema,{});
