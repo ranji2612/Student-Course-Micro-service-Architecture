@@ -35,8 +35,11 @@ module.exports =  {
         });
     },
     
-    updateCourse : function(res, updated, callNo) {
-        Course.update({callNo: callNo}, updated ,function(err, data) {
+    updateCourse : function(res, updated, callNo,options) {
+        if (typeof(options)==="undefined")
+            options = {multi:false};
+        
+        Course.update({callNo: callNo}, updated,options ,function(err, data) {
             if (err) {
                 if (typeof(res)==="undefined")
                     return err;

@@ -36,14 +36,13 @@ amqp.connect('amqp://localhost').then(function(conn) {
         console.log(msg.content.toString());
         data = JSON.parse(msg.content.toString());
         console.log('Course dropped - ',data);
-
         if (msg.fields.routingKey == "courseDrop") {
             //All students who have enrolled in that course
             var matchCondition = {"enrolled":{$in:[data.callNo]}};
             var updateData = {$pull:{"enrolled":data.callNo}};
             var options = {'multi':true};
             //Call update Logic to make the update to hold ref-integ
-            studentLogic.updateStudent(null,updateData,matchCondition,null,null,options);
+            studentLogic.updateStudent(undefined,updateData,matchCondition,null,null,options);
         }
     }
   });

@@ -41,11 +41,13 @@ amqp.connect('amqp://localhost').then(function(conn) {
                 courseLogic.updateCourse(undefined,updated,data.callNo[i]);
             }
         }
+        
         else if (msg.fields.routingKey == "unenroll") {
             console.log('Un-Enrolling the Student '+ data.uni + ' in courses ' +data.callNo);
             for ( var i in data.callNo) {
+                console.log(data.callNo[i]);
                 var updateData = {$set:{'lastUpdated':new Date()},$pull:{'enrolled':data.uni}};
-                courseLogic.updateCourse(undefined,updated,data.callNo[i]);
+                courseLogic.updateCourse(undefined,updateData,data.callNo[i], {'multi':true});
             }
         }
     }

@@ -40,24 +40,19 @@ module.exports =  {
     updateStudent : function(res, updateData, searchCondition,msg,key,options) {
         if (typeof(options)==="undefined")
             options = {multi:false};
-
-
         if(msg)
         {
         var message=msg;
-
         messagingQueue.pushToQueue(key,message);
-        }
-
-
-        Student.update({uni:searchCondition},updateData,options, function(err,data) {
+        }  
+        Student.update(searchCondition,updateData,options, function(err,data) {
             if (err) {
-                if (res==null)
+                if (typeof(res)===undefined)
                     return err;
                 else
                     res.send(err);
             }
-            if (res==null)
+            if (typeof(res)===undefined)
                 return data;
             else
                 res.json(data);
@@ -89,12 +84,8 @@ module.exports =  {
                   if(err) res.send(err);
                   res.json(data);
               });
-
-
-      } );
-
+            });
   },
-
     getAllStudents : function(res, validStudentSchema) {
         //Reusing the existing logic
         this.getStudent(res,validStudentSchema,{});
