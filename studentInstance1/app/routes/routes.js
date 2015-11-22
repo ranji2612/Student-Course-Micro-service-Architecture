@@ -76,10 +76,12 @@ module.exports = function(app) {
  */
 
     app.get('/api/student/:uni', function(req, res) {
-        Student.find({uni : req.params.uni},validStudentSchema, function(err, data) {
-            if (err) res.send(err);
-            res.json(data);
-        });
+        // Student.find({uni : req.params.uni},validStudentSchema, function(err, data) {
+        //     if (err) res.send(err);
+        //     res.json(data);
+        // });
+
+          studentLogic.getStudent(res, validStudentSchema, req.params.uni);
     });
 /**
  * @api {post} /api/student Create a new Student
@@ -103,10 +105,12 @@ module.exports = function(app) {
         var newStudent = dropInvalidSchema(req.body);
         newStudent['lastUpdated'] = new Date();
 
-        Student.create(newStudent, function(err, data) {
-            if (err) res.send(err);
-            res.json(data);
-        });
+        // Student.create(newStudent, function(err, data) {
+        //     if (err) res.send(err);
+        //     res.json(data);
+        // });
+
+          studentLogic.createStudent(res, newStudent);
     });
 /**
  * @api {put} /api/student/:uni Change a Student
@@ -129,10 +133,15 @@ module.exports = function(app) {
         var newData = req.body.updatedData;
         newData['lastUpdated'] = new Date();
 
-        Student.update({uni:req.params.uni},{$set: newData }, function(err,data) {
-            if (err) res.send(err);
-            res.json(data);
-        });
+
+
+        studentLogic.updateStudent(res,{$set:newData},req.params.uni);
+
+
+        // Student.update({uni:req.params.uni},{$set: newData }, function(err,data) {
+        //     if (err) res.send(err);
+        //     res.json(data);
+        // });
     });
 /**
  * @api {delete} /api/student/:uni Delete a student
