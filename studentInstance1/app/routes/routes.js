@@ -132,7 +132,7 @@ module.exports = function(app) {
         //Data to be updated
         var newData = req.body.updatedData;
         newData['lastUpdated'] = new Date();
-        studentLogic.updateStudent(res,{$set:newData},{uni:req.params.uni});  
+        studentLogic.updateStudent(res,{$set:newData},{uni:req.params.uni});
 
 
         // Student.update({uni:req.params.uni},{$set: newData }, function(err,data) {
@@ -210,7 +210,7 @@ module.exports = function(app) {
     //Un-enroll from one / more course
     app.delete('/api/student/:uni/course', function(req, res) {
       var courses = req.body.courses;
-      var updated = {$set:{'lastUpdated':new Date()},$pull : {'enrolled': { $in : courses}}}; 
+      var updated = {$set:{'lastUpdated':new Date()},$pull : {'enrolled': { $in : courses}}};
       var message='{"uni":"'+req.params.uni+'","callNo":'+JSON.stringify(courses)+'}';
       studentLogic.updateStudent(res,updated,{"uni":req.params.uni},message,"unenroll" );
     });

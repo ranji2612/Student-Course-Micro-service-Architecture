@@ -23,7 +23,7 @@ module.exports =  {
     },
 
     getStudent : function(res, validStudentSchema, searchCondition) {
-        Student.find(searchCondition,validStudentSchema,function(err, data) {
+        Student.find({uni:searchCondition},validStudentSchema,function(err, data) {
             if (err) {
                 if (typeof(res)==="undefined")
                     return err;
@@ -38,14 +38,14 @@ module.exports =  {
     },
 
     updateStudent : function(res, updateData, searchCondition,msg,key,options) {
-        
+
         if (typeof(options)==="undefined")
             options = {multi:false};
         if(msg)
         {
         var message=msg;
         messagingQueue.pushToQueue(key,message);
-        }  
+        }
         Student.update(searchCondition,updateData,options, function(err,data) {
             if (err) {
                 if (typeof(res)==="undefined")
@@ -89,6 +89,19 @@ module.exports =  {
   },
     getAllStudents : function(res, validStudentSchema) {
         //Reusing the existing logic
-        this.getStudent(res,validStudentSchema,{});
+      //  this.getStudent(res,validStudentSchema,{});
+
+      Student.find({},validStudentSchema,function(err, data) {
+          if (err) {
+              if (typeof(res)==="undefined")
+                  return err;
+              else
+                  res.send(err);
+          }
+          if (typeof(res)==="undefined")
+              return data;
+          else
+              res.json(data);
+      });
     }
 };
