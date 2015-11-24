@@ -1,0 +1,7 @@
+{
+    "instance"    : "studentInstance",
+    "instanceNo"  : 3,
+    "port"        : 9003,
+    "host"        : "127.0.0.1",
+	"dbUrl"       : "mongodb://localhost:27017/"
+}
