@@ -101,7 +101,7 @@ module.exports = function(app) {
 
  *
   */
-    app.post('/api/student', function(req, res) {
+    app.post('/api/student/:uni', function(req, res) {
         var newStudent = dropInvalidSchema(req.body);
         newStudent['lastUpdated'] = new Date();
 
@@ -210,7 +210,7 @@ module.exports = function(app) {
     //Un-enroll from one / more course
     app.delete('/api/student/:uni/course', function(req, res) {
       var courses = req.body.courses;
-      var updated = {$set:{'lastUpdated':new Date()},$pull : {'enrolled': { $in : courses}}};
+      var updated = {$set:{'lastUpdated':new Date()},   $pull : {'enrolled': { $in : courses}}};
       var message='{"uni":"'+req.params.uni+'","callNo":'+JSON.stringify(courses)+'}';
       studentLogic.updateStudent(res,updated,{"uni":req.params.uni},message,"unenroll" );
     });
