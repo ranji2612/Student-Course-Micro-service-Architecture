@@ -18,7 +18,7 @@ module.exports =  {
                 res.json(data);
         });
     },
-    
+
     getCourse : function(res, validCourseSchema, callNo) {
         Course.find({callNo : callNo}, validCourseSchema,function(err, data) {
             if (err) {
@@ -34,11 +34,11 @@ module.exports =  {
                 res.json(data);
         });
     },
-    
+
     updateCourse : function(res, updated, callNo,options) {
         if (typeof(options)==="undefined")
             options = {multi:false};
-        
+
         Course.update({callNo: callNo}, updated,options ,function(err, data) {
             if (err) {
                 if (typeof(res)==="undefined")
@@ -52,7 +52,7 @@ module.exports =  {
                 res.json(data);
         });
     },
-    
+
     removeCourse : function(res, callNo) {
         Course.remove({callNo:callNo},function(err,data){
             if (err) {
@@ -67,9 +67,9 @@ module.exports =  {
                 res.json(data);
         });
     },
-    
+
     getAllCourses : function(res, validCourseSchema) {
-        Course.find({},function(err, data) {
+        Course.find({},validCourseSchema,function(err, data) {
             if (err) {
                 if (typeof(res)==="undefined")
                     return err;
