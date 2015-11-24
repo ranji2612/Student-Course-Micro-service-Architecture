@@ -262,7 +262,7 @@ module.exports = function(app) {
     * @apiSuccess 200
     *
     */
-    app.post('/api/admin/course',function(req,res){
+    app.post('/api/course/admin',function(req,res){
 
       validCourseSchema = req.body.newSchema;
       res.send(200);

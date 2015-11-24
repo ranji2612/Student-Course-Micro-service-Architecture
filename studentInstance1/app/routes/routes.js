@@ -158,7 +158,7 @@ module.exports = function(app) {
  */
     app.delete('/api/student/:uni', function(req, res) {
 
-
+        
         studentLogic.removeStudent(res, req.params.uni);
 
 
@@ -227,7 +227,7 @@ module.exports = function(app) {
  * @apiSuccess 200
  *
  */
-    app.post('/api/admin/student', function(req,res) {
+    app.post('/api/student/admin', function(req,res) {
         validStudentSchema = req.body.newSchema;
         res.send(200);
     });
