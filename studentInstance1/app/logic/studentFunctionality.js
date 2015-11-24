@@ -38,6 +38,7 @@ module.exports =  {
     },
 
     updateStudent : function(res, updateData, searchCondition,msg,key,options) {
+        
         if (typeof(options)==="undefined")
             options = {multi:false};
         if(msg)
@@ -47,12 +48,12 @@ module.exports =  {
         }  
         Student.update(searchCondition,updateData,options, function(err,data) {
             if (err) {
-                if (typeof(res)===undefined)
+                if (typeof(res)==="undefined")
                     return err;
                 else
                     res.send(err);
             }
-            if (typeof(res)===undefined)
+            if (typeof(res)==="undefined")
                 return data;
             else
                 res.json(data);
