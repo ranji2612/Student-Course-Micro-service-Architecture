@@ -7,7 +7,8 @@ var messagingQueue = require('./../routes/queuePushMessage');
 // Has all the business Logic.
 
 module.exports =  {
-    createStudent  : function(res, newStudent) {
+    createStudent  : function(res, newStudent,search) {
+
       Student.create(newStudent,function(err, data) {
           if (err) {
               if (typeof(res)==="undefined")
