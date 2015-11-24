@@ -16,7 +16,8 @@ Router
 
 REST API Postman Import (For API testing temporary)
 ---------------------------------------------------
-https://www.getpostman.com/collections/9a16e207b3589dbffe2c
+
+https://www.getpostman.com/collections/372e4b5e316dea49fb0c
 
 Somdeep Dey
 
