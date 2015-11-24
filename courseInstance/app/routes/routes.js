@@ -97,7 +97,7 @@ module.exports = function(app) {
     *     }
     */
     app.get('/api/course/:callno', function(req, res) {
-        courseLogic.getCourse(res, validCourseSchema, req.params.callNo);
+        courseLogic.getCourse(res, validCourseSchema, req.params.callno);
     });
 
     /**
@@ -173,7 +173,7 @@ module.exports = function(app) {
      */
     app.delete('/api/course/:callNo', function(req, res) {
         courseLogic.removeCourse(res, req.params.callNo);
-        
+
         //Course is deleted So push to queue to take care of ref integ
         // {'enrolled':{$in:['sr']}},{$pull:{"enrolled":"sr"}},{'multi':true}
         messagingQueue.pushToQueue("courseDrop",{callNo:req.params.callNo});
