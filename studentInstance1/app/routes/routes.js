@@ -105,6 +105,12 @@ module.exports = function(app) {
         var newStudent = dropInvalidSchema(req.body);
         newStudent['lastUpdated'] = new Date();
 
+        if (newStudent['uni']!=req.params.uni)
+        {
+          res.send( "uni does not match");
+          return;
+        }
+
         // Student.create(newStudent, function(err, data) {
         //     if (err) res.send(err);
         //     res.json(data);
