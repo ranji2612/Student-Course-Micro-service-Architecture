@@ -25,21 +25,33 @@ server = http.createServer(function(req,res) {
     if (reqUrl.length > 2 && reqUrl[0]==='api') {
         console.log('Its an api call'); 
         
-        //Convert to Lower case to make it simpler
-        var lastNameLetter = reqUrl[2][1].toLowerCase();
-        console.log('First Letter of Last Name ',lastNameLetter);
-        //      A-I  -  Student Instance 1
-        if ( lastNameLetter >= 'a' && lastNameLetter <= 'i' ) {
-            console.log('Navigating to Server 1');
-            target = {target : 'http://localhost:9001'};
-        }
-        if ( lastNameLetter >= 'j' && lastNameLetter <= 'q' ) {
-            console.log('Navigating to Server 2');
-            target = {target : 'http://localhost:9002'};
-        }
-        if ( lastNameLetter >= 'r' && lastNameLetter <= 'z' ) {
-            console.log('Navigating to Server 3');
-            target = {target : 'http://localhost:9003'};
+        if(reqUrl[1]=='course') {
+            //---- Routing Course ----
+            
+            console.log('Routing to Course');
+            target = {target : 'http://localhost:9082'};
+        } else if (reqUrl=='student') {
+            //---- Routing Student
+            
+            //Convert to Lower case to make it simpler
+            var lastNameLetter = reqUrl[2][1].toLowerCase();
+            console.log('First Letter of Last Name ',lastNameLetter);
+            //      A-I  -  Student Instance 1
+            if ( lastNameLetter >= 'a' && lastNameLetter <= 'i' ) {
+                console.log('Navigating to Server 1');
+                target = {target : 'http://localhost:9001'};
+            }
+            if ( lastNameLetter >= 'j' && lastNameLetter <= 'q' ) {
+                console.log('Navigating to Server 2');
+                target = {target : 'http://localhost:9002'};
+            }
+            if ( lastNameLetter >= 'r' && lastNameLetter <= 'z' ) {
+                console.log('Navigating to Server 3');
+                target = {target : 'http://localhost:9003'};
+            }
+        } else {
+            //Its an api call but invalid
+            res.json({'error':{'code':400,'message':'Bad Request'}});
         }
     }
     

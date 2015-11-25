@@ -105,12 +105,44 @@ module.exports = function(app) {
         var newStudent = dropInvalidSchema(req.body);
         newStudent['lastUpdated'] = new Date();
 
+
+        if(newStudent['enrolled']!="")
+        {
+          res.send( "no enrollements allowed at registration");
+          return;
+        }
+        if (newStudent['uni']!=req.params.uni)
+        {
+          res.send( "uni does not match");
+          return;
+        }
+
         // Student.create(newStudent, function(err, data) {
         //     if (err) res.send(err);
         //     res.json(data);
         // });
 
-          studentLogic.createStudent(res, newStudent);
+
+
+              Student.find({uni:req.params.uni},validStudentSchema,function(err, data) {
+                  if (err) {
+                      if (typeof(res)==="undefined")
+                          return err;
+                      else
+                          res.send("not found in error");
+                  }
+
+                  console.log(data);
+                  if (typeof(res)==="undefined")
+                      return data;
+                if(data=="")
+                   studentLogic.createStudent(res, newStudent,req.params.uni);
+                  else
+                      res.json("Student already present");
+              });
+
+
+        //  studentLogic.createStudent(res, newStudent,req.params.uni);
     });
 /**
  * @api {put} /api/student/:uni Change a Student
