@@ -105,6 +105,12 @@ module.exports = function(app) {
         var newStudent = dropInvalidSchema(req.body);
         newStudent['lastUpdated'] = new Date();
 
+
+        if(newStudent['enrolled']!="")
+        {
+          res.send( "no enrollements allowed at registration");
+          return;
+        }
         if (newStudent['uni']!=req.params.uni)
         {
           res.send( "uni does not match");
