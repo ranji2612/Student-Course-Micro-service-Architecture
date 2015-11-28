@@ -31,6 +31,10 @@ module.exports =  {
                 else
                     res.send(err);
             }
+            if (data.length == 0) {
+                data = {"error" : "Student not present"};
+            }
+            
             if (typeof(res)==="undefined")
                 return data;
             else
@@ -44,8 +48,8 @@ module.exports =  {
             options = {multi:false};
         if(msg)
         {
-        var message=msg;
-        messagingQueue.pushToQueue(key,message);
+            var message=msg;
+            messagingQueue.pushToQueue(key,message);
         }
         Student.update(searchCondition,updateData,options, function(err,data) {
             if (err) {

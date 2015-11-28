@@ -108,41 +108,30 @@ module.exports = function(app) {
 
         if(newStudent['enrolled']!="")
         {
-          res.send( "no enrollements allowed at registration");
+          res.send({"error":"No enrollements allowed at registration"});
           return;
         }
         if (newStudent['uni']!=req.params.uni)
         {
-          res.send( "uni does not match");
+          res.json({"error":"uni does not match"});
           return;
         }
 
-        // Student.create(newStudent, function(err, data) {
-        //     if (err) res.send(err);
-        //     res.json(data);
-        // });
+        Student.find({uni:req.params.uni},validStudentSchema,function(err, data) {
+            if (err) {
+                if (typeof(res)==="undefined")
+                    return err;
+                else
+                    res.send("Error Occured");
+            }
 
-
-
-              Student.find({uni:req.params.uni},validStudentSchema,function(err, data) {
-                  if (err) {
-                      if (typeof(res)==="undefined")
-                          return err;
-                      else
-                          res.send("not found in error");
-                  }
-
-                  console.log(data);
-                  if (typeof(res)==="undefined")
-                      return data;
-                if(data=="")
-                   studentLogic.createStudent(res, newStudent,req.params.uni);
-                  else
-                      res.json("Student already present");
-              });
-
-
-        //  studentLogic.createStudent(res, newStudent,req.params.uni);
+            console.log(data, data==[], data.length==0);
+            if(data.length==0)
+                studentLogic.createStudent(res, newStudent,req.params.uni);
+            else
+                res.json({"error":"Student already present"});
+        });
+        
     });
 /**
  * @api {put} /api/student/:uni Change a Student
@@ -189,7 +178,7 @@ module.exports = function(app) {
  *     }
  */
     app.delete('/api/student/:uni', function(req, res) {
-
+        
         
         studentLogic.removeStudent(res, req.params.uni);
 
@@ -256,12 +245,24 @@ module.exports = function(app) {
  * @apiGroup Admin
  * @apiPermission Admin
  *
- * @apiSuccess 200
+ * @apiSuccess {"message":"Schema change successful"}
  *
  */
-    app.post('/api/student/admin', function(req,res) {
-        validStudentSchema = req.body.newSchema;
-        res.send(200);
+    app.post('/api/student/admin/schema', function(req,res) {
+        if ( !('firstName' in req.body.newSchema) || !('lastName' in req.body.newSchema) || !('uni' in req.body.newSchema) || !('enrolled' in req.body.newSchema)  ) {
+            //If one of the mandatory schemas are not there
+            res.json({"message":"Schema change un-successful.. Cannot remove mandatory columns like firstName lastName UNI or enrolled"});
+        }
+        else {
+            validStudentSchema = req.body.newSchema;
+            // Reinforcing mandatory schema components
+            validStudentSchema['firstName'] = 1;
+            validStudentSchema['lastName'] = 1;
+            validStudentSchema['uni'] = 1;
+            validStudentSchema['enrolled'] = 1;
+
+            res.json({"message":"Schema change successful"});
+        }
     });
 
     //Serve API Docs
