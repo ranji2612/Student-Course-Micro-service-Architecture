@@ -184,7 +184,7 @@ module.exports = function(app) {
     // Enroll in one / group of course
     app.put('/api/student/:uni/course', function(req, res) {
         var courses = req.body.courses;
-        var updated = {$set:{'lastUpdated':new Date()},$pushAll : {'enrolled':courses}};
+        var updated = {$set:{'lastUpdated':new Date()},$addToSet : {'enrolled':{$each:courses}}};
         var message='{"uni":"'+req.params.uni+'","callNo":'+JSON.stringify(courses)+'}';
         studentLogic.updateStudent(res,updated,{"uni":req.params.uni},message,"enroll" );
      });
