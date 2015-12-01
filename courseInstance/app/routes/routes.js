@@ -241,9 +241,18 @@ module.exports = function(app) {
 
      */
     app.put('/api/course/:callNo/student/:uni', function(req,res){
-        console.log(req.body);
-        var updated = {$set:{'lastUpdated':new Date()},$addToSet:{'enrolled':req.params.uni}};
-        courseLogic.updateCourse(res,updated,req.params.callNo);
+         Course.find({callNo :req.params.callNo}, validCourseSchema,function(err, data) {
+            if (err) {
+                res.send("Error Occured");
+            }
+            if(data.length==0)
+                res.json({"error":"Course Not present"});
+            else {
+                
+                var updated = {$set:{'lastUpdated':new Date()},$addToSet:{'enrolled':req.params.uni}};
+                courseLogic.updateCourse(res,updated,req.params.callNo);
+            }
+         });
     });
 
     /**
@@ -265,12 +274,22 @@ module.exports = function(app) {
     */
     app.delete('/api/course/:callNo/student', function(req, res) {
         //UnEnroll Multiple students at a time
-        var students = req.body.students;
-        var updateData = {$set:{'lastUpdated':new Date()},$pull:{'enrolled':{$in : students }}};
+        Course.find({callNo :req.params.callNo}, validCourseSchema,function(err, data) {
+            if (err) {
+                res.send("Error Occured");
+            }
+            if(data.length==0)
+                res.json({"error":"Course Not present"});
+            else {
+          
+                var students = req.body.students;
+                var updateData = {$set:{'lastUpdated':new Date()},$pull:{'enrolled':{$in : students }}};
 
-        courseLogic.updateCourse(res, updateData, req.params.callNo);
-        //Pushing to Queue
-        messagingQueue.pushToQueue("unenroll")
+                courseLogic.updateCourse(res, updateData, req.params.callNo);
+                //Pushing to Queue
+                messagingQueue.pushToQueue("unenroll")
+            }
+        });
     });
 
     /**
@@ -278,9 +297,19 @@ module.exports = function(app) {
     */
 
     app.delete('/api/course/:callNo/student/:uni', function(req, res) {
-        var updateData = {$set:{'lastUpdated':new Date()},$pull:{'enrolled':req.params.uni}};
+        Course.find({callNo :req.params.callNo}, validCourseSchema,function(err, data) {
+            if (err) {
+                res.send("Error Occured");
+            }
+            if(data.length==0)
+                res.json({"error":"Course Not present"});
+            else {
+          
+                var updateData = {$set:{'lastUpdated':new Date()},$pull:{'enrolled':req.params.uni}};
 
-        courseLogic.updateCourse(res, updateData, req.params.callNo);
+                courseLogic.updateCourse(res, updateData, req.params.callNo);
+            }
+        });
     });
 
     //-------------------- API for LOGS --------------------------
