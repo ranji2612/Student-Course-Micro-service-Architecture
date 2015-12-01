@@ -76,12 +76,8 @@ module.exports = function(app) {
  */
 
     app.get('/api/student/:uni', function(req, res) {
-        // Student.find({uni : req.params.uni},validStudentSchema, function(err, data) {
-        //     if (err) res.send(err);
-        //     res.json(data);
-        // });
-
-          studentLogic.getStudent(res, validStudentSchema, req.params.uni);
+        //Handled at the student logic
+        studentLogic.getStudent(res, validStudentSchema, req.params.uni);    
     });
 /**
  * @api {post} /api/student Create a new Student
@@ -125,7 +121,6 @@ module.exports = function(app) {
                     res.send("Error Occured");
             }
 
-            console.log(data, data==[], data.length==0);
             if(data.length==0)
                 studentLogic.createStudent(res, newStudent,req.params.uni);
             else
@@ -150,16 +145,26 @@ module.exports = function(app) {
  *     }
  */
     app.put('/api/student/:uni', function(req, res) {
+        
+        Student.find({uni:req.params.uni},validStudentSchema,function(err, data) {
+            if (err) {
+                if (typeof(res)==="undefined")
+                    return err;
+                else
+                    res.send("Error Occured");
+            }
+
+            if(data.length==0)
+                res.json({"error":"Student Not present"});
+            else {
+                var newData = req.body.updatedData;
+                newData['lastUpdated'] = new Date();
+                studentLogic.updateStudent(res,{$set:newData},{uni:req.params.uni});
+            }
+        });
+        
         //Data to be updated
-        var newData = req.body.updatedData;
-        newData['lastUpdated'] = new Date();
-        studentLogic.updateStudent(res,{$set:newData},{uni:req.params.uni});
-
-
-        // Student.update({uni:req.params.uni},{$set: newData }, function(err,data) {
-        //     if (err) res.send(err);
-        //     res.json(data);
-        // });
+        
     });
 /**
  * @api {delete} /api/student/:uni Delete a student
@@ -179,10 +184,19 @@ module.exports = function(app) {
  */
     app.delete('/api/student/:uni', function(req, res) {
         
-        
-        studentLogic.removeStudent(res, req.params.uni);
+        Student.find({uni:req.params.uni},validStudentSchema,function(err, data) {
+            if (err) {
+                if (typeof(res)==="undefined")
+                    return err;
+                else
+                    res.send("Error Occured");
+            }
 
-
+            if(data.length==0)
+                res.json({"error":"Student Not present"});
+            else
+                studentLogic.removeStudent(res, req.params.uni);
+        });
     });
 
     //----------------------------Course Enrollment--------------------------------------
@@ -204,10 +218,38 @@ module.exports = function(app) {
  */
     // Enroll in one / group of course
     app.put('/api/student/:uni/course', function(req, res) {
-        var courses = req.body.courses;
-        var updated = {$set:{'lastUpdated':new Date()},$pushAll : {'enrolled':courses}};
-        var message='{"uni":"'+req.params.uni+'","callNo":'+JSON.stringify(courses)+'}';
-        studentLogic.updateStudent(res,updated,{"uni":req.params.uni},message,"enroll" );
+        Student.find({uni:req.params.uni},validStudentSchema,function(err, data) {
+            if (err) {
+                if (typeof(res)==="undefined")
+                    return err;
+                else
+                    res.send("Error Occured");
+            }
+
+            if(data.length==0)
+                res.json({"error":"Student Not present"});
+            else {
+                data = data.toObject({getters: true });
+                var courses = req.body.courses;
+                var currentCourses = data.enrolled;
+                console.log(data);
+                
+                console.log(data.uni);
+                console.log(courses);
+                
+                var newEnrollCourses = []
+                for (i in courses) {
+                    if (!(courses[i] in currentCourses)) {
+                        newEnrollCourses.push(courses[i]);
+                    }
+                }
+                console.log(newEnrollCourses);
+                courses = newEnrollCourses;
+                var updated = {$set:{'lastUpdated':new Date()},$pushAll : {'enrolled':courses}};
+                var message='{"uni":"'+req.params.uni+'","callNo":'+JSON.stringify(courses)+'}';
+                studentLogic.updateStudent(res,updated,{"uni":req.params.uni},message,"enroll" );
+            }
+        });
      });
 
 
@@ -230,10 +272,25 @@ module.exports = function(app) {
  */
     //Un-enroll from one / more course
     app.delete('/api/student/:uni/course', function(req, res) {
-      var courses = req.body.courses;
-      var updated = {$set:{'lastUpdated':new Date()},   $pull : {'enrolled': { $in : courses}}};
-      var message='{"uni":"'+req.params.uni+'","callNo":'+JSON.stringify(courses)+'}';
-      studentLogic.updateStudent(res,updated,{"uni":req.params.uni},message,"unenroll" );
+    
+        Student.find({uni:req.params.uni},validStudentSchema,function(err, data) {
+            if (err) {
+                if (typeof(res)==="undefined")
+                    return err;
+                else
+                    res.send("Error Occured");
+            }
+
+            if(data.length==0)
+                res.json({"error":"Student Not present"});
+            else {
+                var courses = req.body.courses;
+                var updated = {$set:{'lastUpdated':new Date()},   $pull : {'enrolled': { $in : courses}}};
+                var message='{"uni":"'+req.params.uni+'","callNo":'+JSON.stringify(courses)+'}';
+                studentLogic.updateStudent(res,updated,{"uni":req.params.uni},message,"unenroll" );
+            }
+        });
+        
     });
     //---------------------------- ADMIN APIs ----------------------------
 
