@@ -8,14 +8,23 @@ var proxy = httpProxy.createProxyServer({});
 //// Listen for the `proxyRes` event on `proxy`.
 ////
 proxy.on('proxyRes', function (proxyRes, req, res) {
+    
+    //console.log(res);
   
+});
+proxy.on('error', function(err,req,res) {
+     res.writeHead(500, {
+    'Content-Type': 'text/plain'
+  });
+
+  res.end('Student instance server not found');
 });
 
 server = http.createServer(function(req,res) {
     
     //By Default student Instance 1
 	var target = {target : 'http://localhost:9001'};
-    
+  
     var reqUrl = req.url.slice(1).split('/');
     
     //Based on the Last name, select the corresponding instance
@@ -30,9 +39,9 @@ server = http.createServer(function(req,res) {
             
             console.log('Routing to Course');
             target = {target : 'http://localhost:9082'};
-        } else if (reqUrl=='student') {
+        } else if (reqUrl[1]=='student') {
             //---- Routing Student
-            
+           
             //Convert to Lower case to make it simpler
             var lastNameLetter = reqUrl[2][1].toLowerCase();
             console.log('First Letter of Last Name ',lastNameLetter);
@@ -52,6 +61,7 @@ server = http.createServer(function(req,res) {
         } else {
             //Its an api call but invalid
             res.json({'error':{'code':400,'message':'Bad Request'}});
+            
         }
     }
     
