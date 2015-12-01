@@ -96,8 +96,16 @@ module.exports = function(app) {
     *       "error": "Course does not exist"
     *     }
     */
-    app.get('/api/course/:callno', function(req, res) {
-        courseLogic.getCourse(res, validCourseSchema, req.params.callno);
+    app.get('/api/course/:callNo', function(req, res) {
+        Course.find({callNo :req.params.callNo}, validCourseSchema,function(err, data) {
+            if (err) {
+                res.send("Error Occured");
+            }
+            if(data.length==0)
+                res.json({"error":"Course Not present"});
+            else
+                courseLogic.getCourse(res, validCourseSchema, req.params.callNo);
+        });
     });
 
     /**
@@ -122,9 +130,18 @@ module.exports = function(app) {
     */
 
     app.post('/api/course', function(req, res) {
-        var newCourse=dropInvalidSchema(req.body);
-        newCourse['lastUpdated']=new Date();
-        courseLogic.createCourse(res, newCourse)
+        Course.find({callNo :req.body.callNo}, validCourseSchema,function(err, data) {
+            if (err) {
+                res.send("Error Occured");
+            }
+            if(data.length!=0)
+                res.json({"error":"Course Already present"});
+            else {
+                var newCourse=dropInvalidSchema(req.body);
+                newCourse['lastUpdated']=new Date();
+                courseLogic.createCourse(res, newCourse)
+            }
+        });
     });
 
     /**
@@ -146,12 +163,25 @@ module.exports = function(app) {
      *     }
      */
     app.put('/api/course/:callNo', function(req, res) {
-        console.log(req.body);
-        var updated=req.body.updatedData;
-        var newdate=new Date();
-        updated['lastUpdated']=newdate;
+        if (res.params.callNo != req.body.callNo)
+            res.json({'error':'CallNos do not match'});
+        
+        Course.find({callNo :req.params.callNo}, validCourseSchema,function(err, data) {
+            if (err) {
+                res.send("Error Occured");
+            }
+            if(data.length==0)
+                res.json({"error":"Course Not present"});
+            else {
+                var updated=req.body.updatedData;
+                var newdate=new Date();
+                updated['lastUpdated']=newdate;
 
-        courseLogic.updateCourse(res,{$set:updated},req.params.callNo);
+                courseLogic.updateCourse(res,{$set:updated},req.params.callNo);
+                
+            }
+        });
+        
     });
 
     /**
@@ -172,11 +202,19 @@ module.exports = function(app) {
 
      */
     app.delete('/api/course/:callNo', function(req, res) {
-        courseLogic.removeCourse(res, req.params.callNo);
-
-        //Course is deleted So push to queue to take care of ref integ
-        // {'enrolled':{$in:['sr']}},{$pull:{"enrolled":"sr"}},{'multi':true}
-        messagingQueue.pushToQueue("courseDrop",{callNo:req.params.callNo});
+        Course.find({callNo :req.params.callNo}, validCourseSchema,function(err, data) {
+            if (err) {
+                res.send("Error Occured");
+            }
+            if(data.length==0)
+                res.json({"error":"Course not present"});
+            else {
+                courseLogic.removeCourse(res, req.params.callNo);
+                //Course is deleted So push to queue to take care of ref integ
+                // {'enrolled':{$in:['sr']}},{$pull:{"enrolled":"sr"}},{'multi':true}
+                messagingQueue.pushToQueue("courseDrop",{callNo:req.params.callNo});
+            }
+        });
     });
 
     /**
@@ -262,9 +300,24 @@ module.exports = function(app) {
     * @apiSuccess 200
     *
     */
-    app.post('/api/course/admin',function(req,res){
+    app.post('/api/course/admin/schema',function(req,res){
+        if ( !('callNo' in req.body.newSchema) || !('name' in req.body.newSchema) || !('instructor' in req.body.newSchema) || !('enrolled' in req.body.newSchema)  ) {
+            //If one of the mandatory schemas are not there
+            res.json({"message":"Schema change un-successful.. Cannot remove mandatory columns like firstName lastName UNI or enrolled"});
+        }
+        else {
+            validStudentSchema = req.body.newSchema;
+            // Reinforcing mandatory schema components
+            validStudentSchema['callNo'] = 1;
+            validStudentSchema['name'] = 1;
+            validStudentSchema['enrolled'] = 1;
+            validStudentSchema['instructor'] = 1;
 
+            res.json({"message":"Schema change successful"});
+        }
+        
       validCourseSchema = req.body.newSchema;
+        
       res.send(200);
 
     });
