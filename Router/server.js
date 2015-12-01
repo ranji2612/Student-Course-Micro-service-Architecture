@@ -17,7 +17,7 @@ proxy.on('error', function(err,req,res) {
     'Content-Type': 'text/plain'
   });
 
-  res.end('Student instance server not found');
+  res.end("{'error':'Server Instance is not found'}");
 });
 
 server = http.createServer(function(req,res) {
@@ -39,6 +39,7 @@ server = http.createServer(function(req,res) {
             
             console.log('Routing to Course');
             target = {target : 'http://localhost:9082'};
+            
         } else if (reqUrl[1]=='student') {
             //---- Routing Student
            
@@ -60,9 +61,13 @@ server = http.createServer(function(req,res) {
             }
         } else {
             //Its an api call but invalid
-            res.json({'error':{'code':400,'message':'Bad Request'}});
+            res.end("{'error':'Bad Request'}");
             
         }
+    } else {
+        //Its an api call but invalid
+        res.end("{'error':'Bad Request'}");
+
     }
     
     proxy.proxyRequest(req, res, target);
