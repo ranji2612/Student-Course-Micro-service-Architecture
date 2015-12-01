@@ -7,7 +7,8 @@ var messagingQueue = require('./../routes/queuePushMessage');
 // Has all the business Logic.
 
 module.exports =  {
-    createStudent  : function(res, newStudent) {
+    createStudent  : function(res, newStudent,search) {
+
       Student.create(newStudent,function(err, data) {
           if (err) {
               if (typeof(res)==="undefined")
@@ -30,6 +31,10 @@ module.exports =  {
                 else
                     res.send(err);
             }
+            if (data.length == 0) {
+                data = {"error" : "Student not present"};
+            }
+            
             if (typeof(res)==="undefined")
                 return data;
             else
@@ -41,11 +46,7 @@ module.exports =  {
 
         if (typeof(options)==="undefined")
             options = {multi:false};
-        if(msg)
-        {
-        var message=msg;
-        messagingQueue.pushToQueue(key,message);
-        }
+        
         Student.update(searchCondition,updateData,options, function(err,data) {
             if (err) {
                 if (typeof(res)==="undefined")
@@ -53,10 +54,19 @@ module.exports =  {
                 else
                     res.send(err);
             }
+            
+            
             if (typeof(res)==="undefined")
                 return data;
-            else
-                res.json(data);
+            else {
+                
+                if(msg)
+                {
+                    var message=msg;
+                    messagingQueue.pushToQueue(key,message);
+                }
+                res.json({"message":"successful"});
+            }
         });
     },
 

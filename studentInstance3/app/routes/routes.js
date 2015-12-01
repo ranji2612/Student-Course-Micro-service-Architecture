@@ -76,12 +76,8 @@ module.exports = function(app) {
  */
 
     app.get('/api/student/:uni', function(req, res) {
-        // Student.find({uni : req.params.uni},validStudentSchema, function(err, data) {
-        //     if (err) res.send(err);
-        //     res.json(data);
-        // });
-
-          studentLogic.getStudent(res, validStudentSchema, req.params.uni);
+        //Handled at the student logic
+        studentLogic.getStudent(res, validStudentSchema, req.params.uni);    
     });
 /**
  * @api {post} /api/student Create a new Student
@@ -105,12 +101,34 @@ module.exports = function(app) {
         var newStudent = dropInvalidSchema(req.body);
         newStudent['lastUpdated'] = new Date();
 
-        // Student.create(newStudent, function(err, data) {
-        //     if (err) res.send(err);
-        //     res.json(data);
-        // });
 
-          studentLogic.createStudent(res, newStudent);
+        if( newStudent['enrolled']!=undefined)
+        {
+          if(newStudent['enrolled']!=""){
+          res.send({"error":"No enrollments allowed at registration"});
+          return;}
+        }
+        if (newStudent['uni']!=req.params.uni)
+        {
+
+          res.json({"error":"uni does not match"});
+          return;
+        }
+
+        Student.find({uni:req.params.uni},validStudentSchema,function(err, data) {
+            if (err) {
+                if (typeof(res)==="undefined")
+                    return err;
+                else
+                    res.send("Error Occured");
+            }
+
+            if(data.length==0)
+                studentLogic.createStudent(res, newStudent,req.params.uni);
+            else
+                res.json({"error":"Student already present"});
+        });
+
     });
 /**
  * @api {put} /api/student/:uni Change a Student
@@ -129,16 +147,45 @@ module.exports = function(app) {
  *     }
  */
     app.put('/api/student/:uni', function(req, res) {
+
+        
+        Student.find({uni:req.params.uni},validStudentSchema,function(err, data) {
+            if (err) {
+                if (typeof(res)==="undefined")
+                    return err;
+                else
+                    res.send("Error Occured");
+            }
+            //Data to be updated
+            var newData = req.body.updatedData;
+            newData['lastUpdated'] = new Date();
+            var updateUni=newData['uni'];
+            console.log(updateUni);
+
+
+            if(newData['uni']!=req.params.uni && newData['uni']!=undefined)
+            {
+              res.json({"error":"Updation not allowed for uni"});
+              return;
+            }
+
+            if ((typeof(newData['enrolled'])!=="undefined")&&(newData['enrolled'].length > 0) )
+            {
+              res.json({"error":"No enrollments allowed in updation"});
+              return;
+            }
+            
+            if(data.length==0)
+                res.json({"error":"Student Not present"});
+            else {
+                var newData = req.body.updatedData;
+                newData['lastUpdated'] = new Date();
+                studentLogic.updateStudent(res,{$set:newData},{uni:req.params.uni});
+            }
+        });
+        
         //Data to be updated
-        var newData = req.body.updatedData;
-        newData['lastUpdated'] = new Date();
-        studentLogic.updateStudent(res,{$set:newData},{uni:req.params.uni});
-
-
-        // Student.update({uni:req.params.uni},{$set: newData }, function(err,data) {
-        //     if (err) res.send(err);
-        //     res.json(data);
-        // });
+        
     });
 /**
  * @api {delete} /api/student/:uni Delete a student
@@ -158,10 +205,18 @@ module.exports = function(app) {
  */
     app.delete('/api/student/:uni', function(req, res) {
 
-        
-        studentLogic.removeStudent(res, req.params.uni);
-
-
+        Student.find({uni:req.params.uni},validStudentSchema,function(err, data) {
+            if (err) {
+                if (typeof(res)==="undefined")
+                    return err;
+                else
+                    res.send("Error Occured");
+            }
+            if(data.length==0)
+                res.json({"error":"Student Not present"});
+            else
+                studentLogic.removeStudent(res, req.params.uni);
+        });
     });
 
     //----------------------------Course Enrollment--------------------------------------
@@ -183,10 +238,23 @@ module.exports = function(app) {
  */
     // Enroll in one / group of course
     app.put('/api/student/:uni/course', function(req, res) {
-        var courses = req.body.courses;
-        var updated = {$set:{'lastUpdated':new Date()},$pushAll : {'enrolled':courses}};
-        var message='{"uni":"'+req.params.uni+'","callNo":'+JSON.stringify(courses)+'}';
-        studentLogic.updateStudent(res,updated,{"uni":req.params.uni},message,"enroll" );
+        Student.find({uni:req.params.uni},validStudentSchema,function(err, data) {
+            if (err) {
+                if (typeof(res)==="undefined")
+                    return err;
+                else
+                    res.send("Error Occured");
+            }
+
+            if(data.length==0)
+                res.json({"error":"Student Not present"});
+            else {
+                var courses = req.body.courses;
+                var updated = {$set:{'lastUpdated':new Date()},$addToSet : {'enrolled':courses}};
+                var message='{"uni":"'+req.params.uni+'","callNo":'+JSON.stringify(courses)+'}';
+                studentLogic.updateStudent(res,updated,{"uni":req.params.uni},message,"enroll" );
+            }
+        });
      });
 
 
@@ -209,10 +277,25 @@ module.exports = function(app) {
  */
     //Un-enroll from one / more course
     app.delete('/api/student/:uni/course', function(req, res) {
-      var courses = req.body.courses;
-      var updated = {$set:{'lastUpdated':new Date()},   $pull : {'enrolled': { $in : courses}}};
-      var message='{"uni":"'+req.params.uni+'","callNo":'+JSON.stringify(courses)+'}';
-      studentLogic.updateStudent(res,updated,{"uni":req.params.uni},message,"unenroll" );
+    
+        Student.find({uni:req.params.uni},validStudentSchema,function(err, data) {
+            if (err) {
+                if (typeof(res)==="undefined")
+                    return err;
+                else
+                    res.send("Error Occured");
+            }
+
+            if(data.length==0)
+                res.json({"error":"Student Not present"});
+            else {
+                var courses = req.body.courses;
+                var updated = {$set:{'lastUpdated':new Date()},   $pull : {'enrolled': { $in : courses}}};
+                var message='{"uni":"'+req.params.uni+'","callNo":'+JSON.stringify(courses)+'}';
+                studentLogic.updateStudent(res,updated,{"uni":req.params.uni},message,"unenroll" );
+            }
+        });
+        
     });
     //---------------------------- ADMIN APIs ----------------------------
 
@@ -224,12 +307,24 @@ module.exports = function(app) {
  * @apiGroup Admin
  * @apiPermission Admin
  *
- * @apiSuccess 200
+ * @apiSuccess {"message":"Schema change successful"}
  *
  */
-    app.post('/api/student/admin', function(req,res) {
-        validStudentSchema = req.body.newSchema;
-        res.send(200);
+    app.post('/api/student/admin/schema', function(req,res) {
+        if ( !('firstName' in req.body.newSchema) || !('lastName' in req.body.newSchema) || !('uni' in req.body.newSchema) || !('enrolled' in req.body.newSchema)  ) {
+            //If one of the mandatory schemas are not there
+            res.json({"message":"Schema change un-successful.. Cannot remove mandatory columns like firstName lastName UNI or enrolled"});
+        }
+        else {
+            validStudentSchema = req.body.newSchema;
+            // Reinforcing mandatory schema components
+            validStudentSchema['firstName'] = 1;
+            validStudentSchema['lastName'] = 1;
+            validStudentSchema['uni'] = 1;
+            validStudentSchema['enrolled'] = 1;
+
+            res.json({"message":"Schema change successful"});
+        }
     });
 
     //Serve API Docs

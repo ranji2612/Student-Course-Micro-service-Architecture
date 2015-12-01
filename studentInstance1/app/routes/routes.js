@@ -102,13 +102,15 @@ module.exports = function(app) {
         newStudent['lastUpdated'] = new Date();
 
 
-        if(newStudent['enrolled']!="")
+        if( newStudent['enrolled']!=undefined)
         {
-          res.send({"error":"No enrollements allowed at registration"});
-          return;
+          if(newStudent['enrolled']!=""){
+          res.send({"error":"No enrollments allowed at registration"});
+          return;}
         }
         if (newStudent['uni']!=req.params.uni)
         {
+
           res.json({"error":"uni does not match"});
           return;
         }
@@ -126,7 +128,7 @@ module.exports = function(app) {
             else
                 res.json({"error":"Student already present"});
         });
-        
+
     });
 /**
  * @api {put} /api/student/:uni Change a Student
@@ -145,6 +147,7 @@ module.exports = function(app) {
  *     }
  */
     app.put('/api/student/:uni', function(req, res) {
+
         
         Student.find({uni:req.params.uni},validStudentSchema,function(err, data) {
             if (err) {
@@ -153,7 +156,25 @@ module.exports = function(app) {
                 else
                     res.send("Error Occured");
             }
+            //Data to be updated
+            var newData = req.body.updatedData;
+            newData['lastUpdated'] = new Date();
+            var updateUni=newData['uni'];
+            console.log(updateUni);
 
+
+            if(newData['uni']!=req.params.uni && newData['uni']!=undefined)
+            {
+              res.json({"error":"Updation not allowed for uni"});
+              return;
+            }
+
+            if ((typeof(newData['enrolled'])!=="undefined")&&(newData['enrolled'].length > 0) )
+            {
+              res.json({"error":"No enrollments allowed in updation"});
+              return;
+            }
+            
             if(data.length==0)
                 res.json({"error":"Student Not present"});
             else {
@@ -183,7 +204,7 @@ module.exports = function(app) {
  *     }
  */
     app.delete('/api/student/:uni', function(req, res) {
-        
+
         Student.find({uni:req.params.uni},validStudentSchema,function(err, data) {
             if (err) {
                 if (typeof(res)==="undefined")
@@ -191,7 +212,6 @@ module.exports = function(app) {
                 else
                     res.send("Error Occured");
             }
-
             if(data.length==0)
                 res.json({"error":"Student Not present"});
             else
@@ -229,23 +249,8 @@ module.exports = function(app) {
             if(data.length==0)
                 res.json({"error":"Student Not present"});
             else {
-                data = data.toObject({getters: true });
                 var courses = req.body.courses;
-                var currentCourses = data.enrolled;
-                console.log(data);
-                
-                console.log(data.uni);
-                console.log(courses);
-                
-                var newEnrollCourses = []
-                for (i in courses) {
-                    if (!(courses[i] in currentCourses)) {
-                        newEnrollCourses.push(courses[i]);
-                    }
-                }
-                console.log(newEnrollCourses);
-                courses = newEnrollCourses;
-                var updated = {$set:{'lastUpdated':new Date()},$pushAll : {'enrolled':courses}};
+                var updated = {$set:{'lastUpdated':new Date()},$addToSet : {'enrolled':courses}};
                 var message='{"uni":"'+req.params.uni+'","callNo":'+JSON.stringify(courses)+'}';
                 studentLogic.updateStudent(res,updated,{"uni":req.params.uni},message,"enroll" );
             }
