@@ -238,7 +238,7 @@ module.exports = function(app) {
      */
     app.put('/api/course/:callNo/student/:uni', function(req,res){
         console.log(req.body);
-        var updated = {$set:{'lastUpdated':new Date()},$push:{'enrolled':req.params.uni}};
+        var updated = {$set:{'lastUpdated':new Date()},$addToSet:{'enrolled':req.params.uni}};
         courseLogic.updateCourse(res,updated,req.params.callNo);
     });
 

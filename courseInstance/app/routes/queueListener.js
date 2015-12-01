@@ -37,7 +37,7 @@ amqp.connect('amqp://localhost').then(function(conn) {
         if (msg.fields.routingKey == "enroll") {
             console.log('Enrolling the Student '+ data.uni + ' in courses ' +data.callNo);
             for ( var i in data.callNo) {
-                var updated = {$set:{'lastUpdated':new Date()},$push:{'enrolled':data.uni}};
+                var updated = {$set:{'lastUpdated':new Date()},$addToSet:{'enrolled':data.uni}};
                 courseLogic.updateCourse(undefined,updated,data.callNo[i]);
             }
         }
