@@ -106,13 +106,15 @@ module.exports = function(app) {
         newStudent['lastUpdated'] = new Date();
 
 
-        if(newStudent['enrolled']!="")
+        if( newStudent['enrolled']!=undefined)
         {
-          res.send({"error":"No enrollements allowed at registration"});
-          return;
+          if(newStudent['enrolled']!=""){
+          res.send({"error":"No enrollments allowed at registration"});
+          return;}
         }
         if (newStudent['uni']!=req.params.uni)
         {
+
           res.json({"error":"uni does not match"});
           return;
         }
@@ -131,7 +133,7 @@ module.exports = function(app) {
             else
                 res.json({"error":"Student already present"});
         });
-        
+
     });
 /**
  * @api {put} /api/student/:uni Change a Student
@@ -153,7 +155,28 @@ module.exports = function(app) {
         //Data to be updated
         var newData = req.body.updatedData;
         newData['lastUpdated'] = new Date();
-        studentLogic.updateStudent(res,{$set:newData},{uni:req.params.uni});
+        var updateUni=newData['uni'];
+        console.log(updateUni);
+
+
+        if(newData['uni']!=req.params.uni && newData['uni']!=undefined)
+        {
+          res.send({"error":"Updation not allowed for uni"});
+          return;
+        }
+
+        if(newData['enrolled']!=undefined)
+        {
+          res.send({"error":"No enrollments allowed in updation"});
+          return;
+        }
+
+              studentLogic.updateStudent(res,{$set:newData},{uni:req.params.uni});
+
+
+
+
+
 
 
         // Student.update({uni:req.params.uni},{$set: newData }, function(err,data) {
@@ -178,8 +201,8 @@ module.exports = function(app) {
  *     }
  */
     app.delete('/api/student/:uni', function(req, res) {
-        
-        
+
+
         studentLogic.removeStudent(res, req.params.uni);
 
 
