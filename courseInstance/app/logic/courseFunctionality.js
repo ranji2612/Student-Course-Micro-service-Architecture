@@ -49,7 +49,7 @@ module.exports =  {
             if (typeof(res)==="undefined")
                 return data;
             else
-                res.json(data);
+                res.json({'message':'Update Successful'});
         });
     },
 

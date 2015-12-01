@@ -163,9 +163,6 @@ module.exports = function(app) {
      *     }
      */
     app.put('/api/course/:callNo', function(req, res) {
-        if (res.params.callNo != req.body.callNo)
-            res.json({'error':'CallNos do not match'});
-        
         Course.find({callNo :req.params.callNo}, validCourseSchema,function(err, data) {
             if (err) {
                 res.send("Error Occured");
@@ -173,8 +170,15 @@ module.exports = function(app) {
             if(data.length==0)
                 res.json({"error":"Course Not present"});
             else {
+                
+                
                 var updated=req.body.updatedData;
                 var newdate=new Date();
+                if (typeof(updated['enrolled'])!=="undefined")
+                {
+                  res.json({"error":"No enrollments allowed in updation"});
+                }
+                
                 updated['lastUpdated']=newdate;
 
                 courseLogic.updateCourse(res,{$set:updated},req.params.callNo);

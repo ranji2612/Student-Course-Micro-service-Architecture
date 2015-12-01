@@ -31,7 +31,7 @@ server = http.createServer(function(req,res) {
     //      A-I  -  Student Instance 1
     //      J-Q  -  Student Instance 2
     //      R-Z  -  Student Instance 3
-    if (reqUrl.length > 2 && reqUrl[0]==='api') {
+    if (reqUrl.length >= 2 && reqUrl[0]==='api') {
         console.log('Its an api call'); 
         
         if(reqUrl[1]=='course') {
@@ -74,5 +74,5 @@ server = http.createServer(function(req,res) {
 });
 
 //Starting the server
-console.log('Starting the Router to server studentInstances');
+console.log('Starting the Router');
 server.listen(8000);

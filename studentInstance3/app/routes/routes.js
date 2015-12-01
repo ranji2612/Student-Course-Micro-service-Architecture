@@ -169,7 +169,7 @@ module.exports = function(app) {
               return;
             }
 
-            if ((typeof(newData['enrolled'])!=="undefined")&&(newData['enrolled'].length > 0) )
+            if (typeof(newData['enrolled'])!=="undefined")
             {
               res.json({"error":"No enrollments allowed in updation"});
               return;
