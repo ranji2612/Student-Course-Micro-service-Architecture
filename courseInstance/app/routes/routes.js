@@ -336,7 +336,7 @@ module.exports = function(app) {
     app.post('/api/course/admin/schema',function(req,res){
         if ( !('callNo' in req.body.newSchema) || !('name' in req.body.newSchema) || !('instructor' in req.body.newSchema) || !('enrolled' in req.body.newSchema)  ) {
             //If one of the mandatory schemas are not there
-            res.json({"message":"Schema change un-successful.. Cannot remove mandatory columns like firstName lastName UNI or enrolled"});
+            res.json({"message":"Schema change un-successful.. Cannot remove mandatory columns like callNo name enrolled or instructor"});
         }
         else {
             validStudentSchema = req.body.newSchema;

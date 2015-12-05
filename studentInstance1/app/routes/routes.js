@@ -168,7 +168,7 @@ module.exports = function(app) {
               res.json({"error":"Updation not allowed for uni"});
               return;
             }
-
+            console.log(typeof(newData['enrolled']));
             if (typeof(newData['enrolled'])!=="undefined")
             {
               res.json({"error":"No enrollments allowed in updation"});
